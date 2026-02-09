@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: Lets Play API
+  version: 1.0.0
+  description: >-
+    Especificación OpenAPI unificada para los distintos servicios de Lets Play.
+    Este fichero centralizará las APIs del proyecto (por ejemplo: users, teams, matches).
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+  - url: https://api.lets-play.example.com
+    description: Producción (placeholder)
+tags:
+  - name: users
+    description: Operaciones sobre usuarios
+  - name: teams
+    description: Operaciones sobre equipos (futuro)
+  - name: matches
+    description: Operaciones sobre partidos (futuro)
+
+paths:
+  /api/v1/users:
+    post:
+      tags: [users]
+      summary: Crear usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '201':
+          description: Usuario creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request (validación)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict (email duplicado)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [users]
+      summary: Obtener usuario por email
+      parameters:
+        - name: email
+          in: query
+          description: Email del usuario a buscar
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/users/{id}:
+    get:
+      tags: [users]
+      summary: Obtener usuario por id
+      parameters:
+        - name: id
+          in: path
+          description: UUID del usuario
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [users]
+      summary: Actualizar campos básicos y/o estado
+      parameters:
+        - name: id
+          in: path
+          description: UUID del usuario
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request (validación)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict (email duplicado)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID v4 autogenerado
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        active:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, active]
+
+    CreateUser:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+
+    UpdateUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        active:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensaje de error legible
+
+  securitySchemes: {}
+
+x-metadata:
+  maintainedBy: equipo-lets-play
+  versionNotes: "Especificación central para múltiples APIs; amplíala con nuevos tags y paths."
+
+x-examples:
+  createUser:
+    summary: Ejemplo payload para crear usuario
+    value:
+      email: usuario@ejemplo.com
+      name: Juan Pérez
