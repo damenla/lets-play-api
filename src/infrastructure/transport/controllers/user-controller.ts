@@ -1,11 +1,13 @@
 import type { Request, Response } from "express";
 import { CreateUserUseCase } from "../../../domain/use-cases/create-user";
 import { GetUserByIdUseCase } from "../../../domain/use-cases/get-user-by-id";
+import { UpdateUserUseCase } from "../../../domain/use-cases/update-user";
 
 export class UserController {
     constructor(
         private readonly userCreateUseCase: CreateUserUseCase,
-        private readonly getUserByIdUseCase: GetUserByIdUseCase
+        private readonly getUserByIdUseCase: GetUserByIdUseCase,
+        private readonly updateUserUseCase: UpdateUserUseCase
     ) {}
 
     createUser = async (req: Request, res: Response): Promise<void> => {
@@ -57,6 +59,37 @@ export class UserController {
                 error.message === GetUserByIdUseCase.Errors.USER_NOT_FOUND.code
             ) {
                 res.status(404).json(GetUserByIdUseCase.Errors.USER_NOT_FOUND);
+            } else {
+                res.status(500).json({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Internal Server Error"
+                });
+            }
+        }
+    };
+
+    updateUser = async (req: Request, res: Response): Promise<void> => {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        try {
+            const user = await this.updateUserUseCase.execute(id as string, updateData);
+            res.status(200).json(user);
+        } catch (error) {
+            const isKnownError = error instanceof Error;
+
+            if (isKnownError && error.message === UpdateUserUseCase.Errors.INVALID_UUID.code) {
+                res.status(400).json(UpdateUserUseCase.Errors.INVALID_UUID);
+            } else if (
+                isKnownError &&
+                error.message === UpdateUserUseCase.Errors.USER_NOT_FOUND.code
+            ) {
+                res.status(404).json(UpdateUserUseCase.Errors.USER_NOT_FOUND);
+            } else if (
+                isKnownError &&
+                error.message === UpdateUserUseCase.Errors.EMAIL_ALREADY_EXISTS.code
+            ) {
+                res.status(409).json(UpdateUserUseCase.Errors.EMAIL_ALREADY_EXISTS);
             } else {
                 res.status(500).json({
                     code: "INTERNAL_SERVER_ERROR",

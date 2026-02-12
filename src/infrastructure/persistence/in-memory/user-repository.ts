@@ -18,4 +18,14 @@ export class InMemoryUserRepository implements IUserRepository {
         const user = this.users.find((u) => u.id === id);
         return user || null;
     }
+
+    async update(id: string, user: Partial<User>): Promise<User | null> {
+        const index = this.users.findIndex((u) => u.id === id);
+        if (index === -1) {
+            return null;
+        }
+        const updatedUser = { ...this.users[index], ...user, updatedAt: new Date() };
+        this.users[index] = updatedUser;
+        return updatedUser;
+    }
 }
