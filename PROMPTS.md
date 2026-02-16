@@ -124,3 +124,16 @@ Limitate a implementar lo necesario para el GET /api/users/:id, no hagas mas.
 Implementa los tests que fallan relacionados con el endpoint PATCH /api/users/:id utilizando la misma estructura que ya has implementado para el POST.
 Asegurate que los tests relacionados con el endpoint PATCH /api/users/:id pasan correctamente.
 Limitate a implementar lo necesario para el PATCH /api/users/:id, no hagas mas.
+
+# 14 - Middleware logger
+
+Quiero implementar en mi backend un middleware de express para hacer logs de las peticiones que recibe el servidor.
+Limitate a implementar lo necesario para el middleware, no hagas mas.
+
+# 15 - Middleware auth
+
+Añade un endpoint de prueba que esté protegido detrás de autentificación. Hazlo sencillo, que requiera un token hardcodeado, y genera un middleware que verifique el token.
+
+# 16 - Tests auth
+
+Genera una suite de tests para validar el middleware de autentificación
