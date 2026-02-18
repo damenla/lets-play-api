@@ -147,3 +147,8 @@ Primero, realiza el setup de las dependencias necesarias y luego hacemos la impl
 # 18 - Docker compose
 
 Generame un fichero docker compose para levantar un postgresql con las variables de entorno definidas en .env.example para que pueda ejecutar mi servidor contra esa bd
+
+# 19 - Dockerfile
+
+Generame un Dockerfile para que yo pueda generar imagenes de mi servidor.
+La idea es que pueda desplegarlo allá donde Docker sea compatible.

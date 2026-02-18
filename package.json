@@ -15,15 +15,17 @@
 	"type": "commonjs",
 	"main": "dist/server.js",
 	"scripts": {
-		"dev": "nodemon src/server.ts",
-		"dev:inmemory": "IN_MEMORY_DATA=true nodemon src/server.ts",
-		"start": "ts-node src/server.ts",
-		"start:inmemory": "IN_MEMORY_DATA=true ts-node src/server.ts",
-		"test": "vitest",
-		"test:coverage": "vitest --coverage",
-		"prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+		"build": "tsc",
 		"db:migrate": "ts-node scripts/migrate.ts",
-		"db:reset": "ts-node scripts/reset-db.ts"
+		"db:reset": "ts-node scripts/reset-db.ts",
+		"dev:inmemory": "IN_MEMORY_DATA=true nodemon src/server.ts",
+		"dev": "nodemon src/server.ts",
+		"prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+		"start:inmemory": "IN_MEMORY_DATA=true ts-node src/server.ts",
+		"start:prod": "node dist/server.js",
+		"start": "ts-node src/server.ts",
+		"test:coverage": "vitest --coverage",
+		"test": "vitest"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.6",
