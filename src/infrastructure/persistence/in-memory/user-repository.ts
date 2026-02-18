@@ -5,6 +5,8 @@ export class InMemoryUserRepository implements IUserRepository {
     private users: User[] = [];
 
     async create(user: User): Promise<User> {
+        user.createdAt = new Date();
+        user.updatedAt = new Date();
         this.users.push(user);
         return user;
     }

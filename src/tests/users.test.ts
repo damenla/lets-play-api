@@ -7,7 +7,7 @@ describe("User API", () => {
     let app: Application;
 
     beforeEach(() => {
-        app = createApp();
+        app = createApp(true);
     });
 
     describe("POST /api/users", () => {

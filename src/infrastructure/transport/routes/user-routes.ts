@@ -3,16 +3,21 @@ import { CreateUserUseCase } from "../../../domain/use-cases/create-user";
 import { GetUserByIdUseCase } from "../../../domain/use-cases/get-user-by-id";
 import { UpdateUserUseCase } from "../../../domain/use-cases/update-user";
 import { InMemoryUserRepository } from "../../persistence/in-memory/user-repository";
+import { PostgresUserRepository } from "../../persistence/postgres/user-repository";
 import { UserController } from "../controllers/user-controller";
 import { authMiddleware } from "../middleware/auth";
 
-export function createUserRouter(): Router {
+export function createUserRouter(inMemoryData: boolean): Router {
     const router = Router();
 
-    const userRepository = new InMemoryUserRepository();
+    const userRepository = inMemoryData
+        ? new InMemoryUserRepository()
+        : new PostgresUserRepository();
+
     const userCreateUseCase = new CreateUserUseCase(userRepository);
     const getUserByIdUseCase = new GetUserByIdUseCase(userRepository);
     const updateUserUseCase = new UpdateUserUseCase(userRepository);
+
     const userController = new UserController(
         userCreateUseCase,
         getUserByIdUseCase,

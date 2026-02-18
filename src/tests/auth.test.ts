@@ -7,7 +7,7 @@ describe("Auth Middleware", () => {
     let app: Application;
 
     beforeEach(() => {
-        app = createApp();
+        app = createApp(true);
     });
 
     describe("GET /api/users/test/protected", () => {

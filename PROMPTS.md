@@ -137,3 +137,13 @@ Añade un endpoint de prueba que esté protegido detrás de autentificación. Ha
 # 16 - Tests auth
 
 Genera una suite de tests para validar el middleware de autentificación
+
+# 17 - Persistence
+
+Quiero realizar una nueva implementacion de la capa de persistencia (Repositories).
+Ahora tengo la persistencia en memoria pero me gustaria tener los datos en una base de datos PostgreSQL.
+Primero, realiza el setup de las dependencias necesarias y luego hacemos la implementacion especifica.
+
+# 18 - Docker compose
+
+Generame un fichero docker compose para levantar un postgresql con las variables de entorno definidas en .env.example para que pueda ejecutar mi servidor contra esa bd
