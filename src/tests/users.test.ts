@@ -13,8 +13,10 @@ describe("User API", () => {
     describe("POST /api/users", () => {
         it("should create a new user with valid data", async () => {
             const newUser = {
+                username: "testuser",
                 email: "test@example.com",
-                name: "Test User"
+                name: "Test User",
+                password: "password123"
             };
 
             const response = await request(app)
@@ -24,16 +26,21 @@ describe("User API", () => {
                 .expect(201);
 
             expect(response.body).toHaveProperty("id");
+            expect(response.body.username).toBe(newUser.username);
             expect(response.body.email).toBe(newUser.email);
             expect(response.body.name).toBe(newUser.name);
             expect(response.body.isActive).toBe(true);
+            expect(response.body).not.toHaveProperty("password");
             expect(response.body).toHaveProperty("createdAt");
             expect(response.body).toHaveProperty("updatedAt");
         });
 
         it("should return 400 if required fields are missing", async () => {
             const invalidUser = {
-                name: "Test User" // Missing email
+                username: "testuser",
+                // Missing email
+                name: "Test User",
+                password: "password123"
             };
 
             await request(app).post("/api/users").send(invalidUser).expect(400);
@@ -41,24 +48,49 @@ describe("User API", () => {
 
         it("should return 400 if email is invalid", async () => {
             const invalidUser = {
+                username: "testuser",
                 email: "not-an-email",
-                name: "Test User"
+                name: "Test User",
+                password: "password123"
             };
 
             await request(app).post("/api/users").send(invalidUser).expect(400);
         });
 
-        // This test will fail or be flaky until we have real or mocked persistence.
-        // For now we assume that in pure TDD, we will implement the logic later.
-        // To simplify, I will omit the conflict test in this first structure pass
-        // or leave it prepared to fail.
-        it("should return 409 if email already exists", async () => {
-            // First create one
-            const user = { email: "duplicate@example.com", name: "Original" };
-            await request(app).post("/api/users").send(user);
+        it("should return 409 if username already exists", async () => {
+            const user = {
+                username: "duplicate",
+                email: "user1@example.com",
+                name: "User 1",
+                password: "password123"
+            };
+            await request(app).post("/api/users").send(user).expect(201);
 
-            // Try to create the same one
-            await request(app).post("/api/users").send(user).expect(409);
+            const duplicateUser = {
+                username: "duplicate",
+                email: "user2@example.com",
+                name: "User 2",
+                password: "password456"
+            };
+            await request(app).post("/api/users").send(duplicateUser).expect(409);
+        });
+
+        it("should allow duplicate emails", async () => {
+            const user1 = {
+                username: "user1",
+                email: "shared@example.com",
+                name: "User 1",
+                password: "password123"
+            };
+            await request(app).post("/api/users").send(user1).expect(201);
+
+            const user2 = {
+                username: "user2",
+                email: "shared@example.com",
+                name: "User 2",
+                password: "password456"
+            };
+            await request(app).post("/api/users").send(user2).expect(201);
         });
     });
 
@@ -67,13 +99,28 @@ describe("User API", () => {
             // Create multiple users to ensure we get the correct one
             await request(app)
                 .post("/api/users")
-                .send({ email: "userA@example.com", name: "User A" });
+                .send({
+                    username: "userA",
+                    email: "userA@example.com",
+                    name: "User A",
+                    password: "passwordA"
+                });
             const userBRes = await request(app)
                 .post("/api/users")
-                .send({ email: "userB@example.com", name: "User B" });
+                .send({
+                    username: "userB",
+                    email: "userB@example.com",
+                    name: "User B",
+                    password: "passwordB"
+                });
             await request(app)
                 .post("/api/users")
-                .send({ email: "userC@example.com", name: "User C" });
+                .send({
+                    username: "userC",
+                    email: "userC@example.com",
+                    name: "User C",
+                    password: "passwordC"
+                });
 
             const userId = userBRes.body.id;
 
@@ -83,6 +130,7 @@ describe("User API", () => {
                 .expect(200);
 
             expect(response.body.id).toBe(userId);
+            expect(response.body.username).toBe("userB");
             expect(response.body.email).toBe("userB@example.com");
             expect(response.body.name).toBe("User B");
         });
@@ -102,10 +150,20 @@ describe("User API", () => {
             // Create two users
             const resA = await request(app)
                 .post("/api/users")
-                .send({ email: "updateA@example.com", name: "User A" });
+                .send({
+                    username: "userA",
+                    email: "updateA@example.com",
+                    name: "User A",
+                    password: "passwordA"
+                });
             const resB = await request(app)
                 .post("/api/users")
-                .send({ email: "updateB@example.com", name: "User B" });
+                .send({
+                    username: "userB",
+                    email: "updateB@example.com",
+                    name: "User B",
+                    password: "passwordB"
+                });
 
             const userIdA = resA.body.id;
             const userIdB = resB.body.id;
@@ -136,7 +194,12 @@ describe("User API", () => {
         it("should update user email successfully", async () => {
             const createRes = await request(app)
                 .post("/api/users")
-                .send({ email: "old@example.com", name: "User" });
+                .send({
+                    username: "user",
+                    email: "old@example.com",
+                    name: "User",
+                    password: "password"
+                });
             const userId = createRes.body.id;
 
             const updateData = {
@@ -151,19 +214,44 @@ describe("User API", () => {
             expect(response.body.email).toBe(updateData.email);
         });
 
-        it("should return 409 if new email conflicts", async () => {
+        it("should update username successfully", async () => {
+            const createRes = await request(app)
+                .post("/api/users")
+                .send({
+                    username: "oldusername",
+                    email: "user@example.com",
+                    name: "User",
+                    password: "password"
+                });
+            const userId = createRes.body.id;
+
+            const updateData = {
+                username: "newusername"
+            };
+
+            const response = await request(app)
+                .patch(`/api/users/${userId}`)
+                .send(updateData)
+                .expect(200);
+
+            expect(response.body.username).toBe(updateData.username);
+        });
+
+        it("should return 409 if new username conflicts", async () => {
             // Create user A
-            await request(app).post("/api/users").send({ email: "a@example.com", name: "A" });
+            await request(app)
+                .post("/api/users")
+                .send({ username: "userA", email: "a@example.com", name: "A", password: "p" });
             // Create user B
             const resB = await request(app)
                 .post("/api/users")
-                .send({ email: "b@example.com", name: "B" });
+                .send({ username: "userB", email: "b@example.com", name: "B", password: "p" });
             const userIdB = resB.body.id;
 
-            // Try to change B's email to A's email
+            // Try to change B's username to A's username
             await request(app)
                 .patch(`/api/users/${userIdB}`)
-                .send({ email: "a@example.com" })
+                .send({ username: "userA" })
                 .expect(409);
         });
 
@@ -171,6 +259,47 @@ describe("User API", () => {
             await request(app)
                 .patch("/api/users/00000000-0000-0000-0000-000000000000")
                 .send({ name: "New" })
+                .expect(404);
+        });
+    });
+
+    describe("PATCH /api/users/:id/password", () => {
+        it("should update user password successfully", async () => {
+            const createRes = await request(app)
+                .post("/api/users")
+                .send({
+                    username: "userpw",
+                    email: "pw@example.com",
+                    name: "User",
+                    password: "oldpassword"
+                });
+            const userId = createRes.body.id;
+
+            await request(app)
+                .patch(`/api/users/${userId}/password`)
+                .send({ password: "newpassword" })
+                .expect(204);
+        });
+
+        it("should return 400 if password is missing", async () => {
+            const createRes = await request(app)
+                .post("/api/users")
+                .send({
+                    username: "userpw2",
+                    email: "pw2@example.com",
+                    name: "User",
+                    password: "oldpassword"
+                });
+            const userId = createRes.body.id;
+
+            await request(app).patch(`/api/users/${userId}/password`).send({}).expect(400);
+        });
+
+        it("should return 404 if user not found", async () => {
+            const nonExistentId = "00000000-0000-0000-0000-000000000000";
+            await request(app)
+                .patch(`/api/users/${nonExistentId}/password`)
+                .send({ password: "newpassword" })
                 .expect(404);
         });
     });

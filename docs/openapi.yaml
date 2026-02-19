@@ -2,12 +2,12 @@ openapi: 3.0.0
 info:
     title: API de Partidos de Deportes en Equipo
     description: API para la gestión de usuarios y partidos de deportes en equipo.
-    version: 1.0.0
+    version: 1.2.0
 paths:
     /api/users:
         post:
             summary: Crear Usuario
-            description: Crea un nuevo usuario en el sistema.
+            description: Crea un nuevo usuario en el sistema. El campo `username` debe ser único; el `email` puede repetirse.
             operationId: createUser
             requestBody:
                 description: Datos del nuevo usuario
@@ -81,8 +81,60 @@ paths:
                     $ref: "#/components/responses/NotFound"
                 "409":
                     $ref: "#/components/responses/Conflict"
+    /api/users/{id}/password:
+        patch:
+            summary: Actualizar Contraseña de Usuario
+            description: Actualiza únicamente la contraseña de un usuario existente.
+            operationId: updatePassword
+            parameters:
+                - name: id
+                  in: path
+                  description: ID único del usuario (UUID)
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            requestBody:
+                description: Nueva contraseña
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UserPasswordUpdate"
+            responses:
+                "204":
+                    description: Contraseña actualizada exitosamente
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "404":
+                    $ref: "#/components/responses/NotFound"
+    /api/users/test/protected:
+        get:
+            summary: Ruta Protegida de Prueba
+            description: Endpoint para verificar el funcionamiento del middleware de autenticación.
+            operationId: testProtected
+            security:
+                - bearerAuth: []
+            responses:
+                "200":
+                    description: Acceso concedido
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                                        example: "Secret content"
+                "401":
+                    description: No autorizado
 
 components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
     schemas:
         User:
             type: object
@@ -91,10 +143,13 @@ components:
                     type: string
                     format: uuid
                     description: Identificador único del usuario.
+                username:
+                    type: string
+                    description: Nombre de usuario único del usuario.
                 email:
                     type: string
                     format: email
-                    description: Correo electrónico del usuario.
+                    description: Correo electrónico de contacto (no es único).
                 name:
                     type: string
                     description: Nombre completo del usuario.
@@ -111,6 +166,7 @@ components:
                     description: Fecha de última actualización.
             required:
                 - id
+                - username
                 - email
                 - name
                 - isActive
@@ -120,20 +176,32 @@ components:
         UserInput:
             type: object
             properties:
+                username:
+                    type: string
+                    description: Nombre de usuario único. Usado para autenticación.
                 email:
                     type: string
                     format: email
-                    description: Correo electrónico del usuario.
+                    description: Correo electrónico de contacto (no es único).
                 name:
                     type: string
                     description: Nombre completo del usuario.
+                password:
+                    type: string
+                    writeOnly: true
+                    description: Contraseña del usuario (se almacenará como hash).
             required:
+                - username
                 - email
                 - name
+                - password
 
         UserUpdate:
             type: object
             properties:
+                username:
+                    type: string
+                    description: Nuevo nombre de usuario (debe ser único).
                 email:
                     type: string
                     format: email
@@ -144,6 +212,16 @@ components:
                 isActive:
                     type: boolean
                     description: Nuevo estado.
+
+        UserPasswordUpdate:
+            type: object
+            properties:
+                password:
+                    type: string
+                    writeOnly: true
+                    description: Nueva contraseña (se almacenará como hash).
+            required:
+                - password
 
     responses:
         BadRequest:
@@ -167,7 +245,7 @@ components:
                                 type: string
                                 example: "Usuario no encontrado"
         Conflict:
-            description: Conflicto (ej. email ya existente).
+            description: Conflicto (ej. username ya existente).
             content:
                 application/json:
                     schema:
@@ -175,4 +253,4 @@ components:
                         properties:
                             error:
                                 type: string
-                                example: "El email ya está en uso"
+                                example: "El username ya está en uso"

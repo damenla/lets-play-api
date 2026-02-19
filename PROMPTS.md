@@ -152,3 +152,21 @@ Generame un fichero docker compose para levantar un postgresql con las variables
 
 Generame un Dockerfile para que yo pueda generar imagenes de mi servidor.
 La idea es que pueda desplegarlo allá donde Docker sea compatible.
+
+# 20 - User model modifications
+
+Quiero realizar las siguiente modificaciones en el usuario:
+
+1. Añadir un campo de nombre de usuario, obligatorio y único.
+2. El email deja de ser único.
+3. Añadir un campo para almacenar el password del usuario.
+
+Generame un documento de diseño en la carpeta docs/design/ que describa de forma concisa estos cambios.
+
+# 21 - OpenAPI spec
+
+Utiliza el design doc que acabas de generar (docs/design/0002\_...) para actualizar la especificación de OpenAPI.
+
+# 22 - Update TDD
+
+Actualiza los tests relacionados con las modificaciones introducidas en la especificación de OpenAPI.

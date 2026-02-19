@@ -13,9 +13,9 @@ export class UpdateUserUseCase {
             code: "INVALID_UUID",
             message: "Invalid UUID format"
         },
-        EMAIL_ALREADY_EXISTS: {
-            code: "EMAIL_ALREADY_EXISTS",
-            message: "Email already exists"
+        USERNAME_ALREADY_EXISTS: {
+            code: "USERNAME_ALREADY_EXISTS",
+            message: "Username already exists"
         }
     };
 
@@ -30,10 +30,10 @@ export class UpdateUserUseCase {
             throw new Error(UpdateUserUseCase.Errors.USER_NOT_FOUND.code);
         }
 
-        if (updateData.email && updateData.email !== existingUser.email) {
-            const emailExists = await this.userRepository.findByEmail(updateData.email);
-            if (emailExists) {
-                throw new Error(UpdateUserUseCase.Errors.EMAIL_ALREADY_EXISTS.code);
+        if (updateData.username && updateData.username !== existingUser.username) {
+            const usernameExists = await this.userRepository.findByUsername(updateData.username);
+            if (usernameExists) {
+                throw new Error(UpdateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code);
             }
         }
 

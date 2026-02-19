@@ -13,12 +13,14 @@ export API_URL="http://localhost:3000"
 curl -X POST $API_URL/api/users \
   -H "Content-Type: application/json" \
   -d '{
+    "username": "jdoe",
     "name": "John Doe",
-    "email": "john.doe@example.com"
+    "email": "john.doe@example.com",
+    "password": "secretpassword123"
   }'
 ```
 
-**Respuesta esperada:** Status 201, usuario creado con `id`, `name`, `email`, `isActive: true`, `createdAt`, `updatedAt`.
+**Respuesta esperada:** Status 201, usuario creado con `id`, `username`, `name`, `email`, `isActive: true`, `createdAt`, `updatedAt`.
 
 ## 2. Crear otro usuario
 
@@ -26,8 +28,10 @@ curl -X POST $API_URL/api/users \
 curl -X POST $API_URL/api/users \
   -H "Content-Type: application/json" \
   -d '{
+    "username": "jsmith",
     "name": "Jane Smith",
-    "email": "jane.smith@example.com"
+    "email": "jane.smith@example.com",
+    "password": "anotherpassword456"
   }'
 ```
 
@@ -87,6 +91,28 @@ curl -X GET $API_URL/api/users/00000000-0000-0000-0000-000000000000
 
 **Respuesta esperada:** Status 404 Not Found.
 
+## 8. Actualizar contraseña de usuario
+
+```bash
+curl -X PATCH $API_URL/api/users/$USER_ID/password \
+  -H "Content-Type: application/json" \
+  -d '{
+    "password": "newsecurepassword789"
+  }'
+```
+
+**Respuesta esperada:** Status 204 No Content.
+
+## 9. Acceder a ruta protegida (ejemplo)
+
+```bash
+# De momento la autenticación es un middleware mock que busca el header 'Authorization'
+curl -X GET $API_URL/api/users/test/protected \
+  -H "Authorization: Bearer mock-token"
+```
+
+**Respuesta esperada:** Status 200 OK con mensaje "Secret content".
+
 ---
 
 ## Flujo completo de prueba (con jq instalado)
@@ -98,8 +124,10 @@ export API_URL="http://localhost:3000"
 RESPONSE=$(curl -s -X POST $API_URL/api/users \
   -H "Content-Type: application/json" \
   -d '{
+    "username": "auto_user",
     "name": "Automatic User",
-    "email": "auto@example.com"
+    "email": "auto@example.com",
+    "password": "password123"
   }')
 
 echo "Usuario creado:"
@@ -118,6 +146,17 @@ echo -e "\nActualizando usuario..."
 curl -s -X PATCH $API_URL/api/users/$USER_ID \
   -H "Content-Type: application/json" \
   -d '{"isActive": false}' | jq '.'
+
+# 5. Actualizar contraseña
+echo -e "\nActualizando contraseña..."
+curl -s -v -X PATCH $API_URL/api/users/$USER_ID/password \
+  -H "Content-Type: application/json" \
+  -d '{"password": "newpassword"}'
+
+# 6. Probar ruta protegida
+echo -e "\nProbando ruta protegida..."
+curl -s -X GET $API_URL/api/users/test/protected \
+  -H "Authorization: Bearer mock-token" | jq '.'
 ```
 
 **Nota:** Los comandos con `jq` requieren tener instalado `jq` para formatear el JSON. Si no lo tienes, elimina el `| jq '.'`

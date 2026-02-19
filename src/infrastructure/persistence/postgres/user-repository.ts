@@ -3,14 +3,14 @@ import type { IUserRepository } from "../user-repository";
 import type { User } from "../../../types/user";
 
 export class PostgresUserRepository implements IUserRepository {
-    async create(user: User): Promise<User> {
+    async create(user: User, passwordHash: string): Promise<User> {
         const query = `
-            INSERT INTO users (id, email, name, is_active, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO users (id, username, email, name, password, is_active, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
         `;
         const now = new Date();
-        const values = [user.id, user.email, user.name, user.isActive, now, now];
+        const values = [user.id, user.username, user.email, user.name, passwordHash, user.isActive, now, now];
 
         const result = await pool.query(query, values);
         return this.mapRowToUser(result.rows[0]);
@@ -19,6 +19,17 @@ export class PostgresUserRepository implements IUserRepository {
     async findByEmail(email: string): Promise<User | null> {
         const query = "SELECT * FROM users WHERE email = $1";
         const result = await pool.query(query, [email]);
+
+        if (result.rows.length === 0) {
+            return null;
+        }
+
+        return this.mapRowToUser(result.rows[0]);
+    }
+
+    async findByUsername(username: string): Promise<User | null> {
+        const query = "SELECT * FROM users WHERE username = $1";
+        const result = await pool.query(query, [username]);
 
         if (result.rows.length === 0) {
             return null;
@@ -43,6 +54,10 @@ export class PostgresUserRepository implements IUserRepository {
         const values: any[] = [];
         let paramIndex = 1;
 
+        if (user.username !== undefined) {
+            fields.push(`username = $${paramIndex++}`);
+            values.push(user.username);
+        }
         if (user.email !== undefined) {
             fields.push(`email = $${paramIndex++}`);
             values.push(user.email);
@@ -81,9 +96,15 @@ export class PostgresUserRepository implements IUserRepository {
         return this.mapRowToUser(result.rows[0]);
     }
 
+    async updatePassword(id: string, passwordHash: string): Promise<void> {
+        const query = "UPDATE users SET password = $1, updated_at = $2 WHERE id = $3";
+        await pool.query(query, [passwordHash, new Date(), id]);
+    }
+
     private mapRowToUser(row: any): User {
         return {
             id: row.id,
+            username: row.username,
             email: row.email,
             name: row.name,
             isActive: row.is_active,

@@ -3,8 +3,10 @@ import type { User } from "../../types/user";
 import type { IUserRepository } from "../../infrastructure/persistence/user-repository";
 
 export interface CreateUserDto {
+    username: string;
     name: string;
     email: string;
+    password: string;
 }
 
 export class CreateUserUseCase {
@@ -13,15 +15,15 @@ export class CreateUserUseCase {
     static readonly Errors = {
         REQUIRED_FIELD_MISSING: {
             code: "REQUIRED_FIELD_MISSING",
-            message: "Email and name are required"
+            message: "Username, email, name and password are required"
         },
         INVALID_EMAIL_FORMAT: {
             code: "INVALID_EMAIL_FORMAT",
             message: "Invalid email format"
         },
-        EMAIL_ALREADY_EXISTS: {
-            code: "EMAIL_ALREADY_EXISTS",
-            message: "Email already exists"
+        USERNAME_ALREADY_EXISTS: {
+            code: "USERNAME_ALREADY_EXISTS",
+            message: "Username already exists"
         }
     };
 
@@ -30,6 +32,7 @@ export class CreateUserUseCase {
 
         const newUser: User = {
             id: randomUUID(),
+            username: input.username,
             email: input.email,
             name: input.name,
             isActive: true,
@@ -37,12 +40,12 @@ export class CreateUserUseCase {
             updatedAt: new Date()
         };
 
-        return await this.userRepository.create(newUser);
+        return await this.userRepository.create(newUser, input.password);
     }
 
     private async validate(input: CreateUserDto): Promise<void> {
-        const { name, email } = input;
-        if (!email || !name) {
+        const { username, name, email, password } = input;
+        if (!username || !email || !name || !password) {
             throw new Error(CreateUserUseCase.Errors.REQUIRED_FIELD_MISSING.code);
         }
 
@@ -51,9 +54,9 @@ export class CreateUserUseCase {
             throw new Error(CreateUserUseCase.Errors.INVALID_EMAIL_FORMAT.code);
         }
 
-        const existingUser = await this.userRepository.findByEmail(email);
+        const existingUser = await this.userRepository.findByUsername(username);
         if (existingUser) {
-            throw new Error(CreateUserUseCase.Errors.EMAIL_ALREADY_EXISTS.code);
+            throw new Error(CreateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code);
         }
     }
 }

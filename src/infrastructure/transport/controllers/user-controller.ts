@@ -2,19 +2,21 @@ import type { Request, Response } from "express";
 import { CreateUserUseCase } from "../../../domain/use-cases/create-user";
 import { GetUserByIdUseCase } from "../../../domain/use-cases/get-user-by-id";
 import { UpdateUserUseCase } from "../../../domain/use-cases/update-user";
+import { UpdatePasswordUseCase } from "../../../domain/use-cases/update-password";
 
 export class UserController {
     constructor(
         private readonly userCreateUseCase: CreateUserUseCase,
         private readonly getUserByIdUseCase: GetUserByIdUseCase,
-        private readonly updateUserUseCase: UpdateUserUseCase
+        private readonly updateUserUseCase: UpdateUserUseCase,
+        private readonly updatePasswordUseCase: UpdatePasswordUseCase
     ) {}
 
     createUser = async (req: Request, res: Response): Promise<void> => {
-        const { email, name } = req.body;
+        const { username, email, name, password } = req.body;
 
         try {
-            const user = await this.userCreateUseCase.execute({ name, email });
+            const user = await this.userCreateUseCase.execute({ username, email, name, password });
             res.status(201).json(user);
         } catch (error) {
             const isKnownError = error instanceof Error;
@@ -31,9 +33,9 @@ export class UserController {
                 res.status(400).json(CreateUserUseCase.Errors.INVALID_EMAIL_FORMAT);
             } else if (
                 isKnownError &&
-                error.message === CreateUserUseCase.Errors.EMAIL_ALREADY_EXISTS.code
+                error.message === CreateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code
             ) {
-                res.status(409).json(CreateUserUseCase.Errors.EMAIL_ALREADY_EXISTS);
+                res.status(409).json(CreateUserUseCase.Errors.USERNAME_ALREADY_EXISTS);
             } else {
                 res.status(500).json({
                     code: "INTERNAL_SERVER_ERROR",
@@ -87,9 +89,43 @@ export class UserController {
                 res.status(404).json(UpdateUserUseCase.Errors.USER_NOT_FOUND);
             } else if (
                 isKnownError &&
-                error.message === UpdateUserUseCase.Errors.EMAIL_ALREADY_EXISTS.code
+                error.message === UpdateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code
             ) {
-                res.status(409).json(UpdateUserUseCase.Errors.EMAIL_ALREADY_EXISTS);
+                res.status(409).json(UpdateUserUseCase.Errors.USERNAME_ALREADY_EXISTS);
+            } else {
+                res.status(500).json({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Internal Server Error"
+                });
+            }
+        }
+    };
+
+    updatePassword = async (req: Request, res: Response): Promise<void> => {
+        const { id } = req.params;
+        const { password } = req.body;
+
+        try {
+            await this.updatePasswordUseCase.execute(id as string, { password });
+            res.status(204).send();
+        } catch (error) {
+            const isKnownError = error instanceof Error;
+
+            if (
+                isKnownError &&
+                error.message === UpdatePasswordUseCase.Errors.INVALID_UUID.code
+            ) {
+                res.status(400).json(UpdatePasswordUseCase.Errors.INVALID_UUID);
+            } else if (
+                isKnownError &&
+                error.message === UpdatePasswordUseCase.Errors.PASSWORD_REQUIRED.code
+            ) {
+                res.status(400).json(UpdatePasswordUseCase.Errors.PASSWORD_REQUIRED);
+            } else if (
+                isKnownError &&
+                error.message === UpdatePasswordUseCase.Errors.USER_NOT_FOUND.code
+            ) {
+                res.status(404).json(UpdatePasswordUseCase.Errors.USER_NOT_FOUND);
             } else {
                 res.status(500).json({
                     code: "INTERNAL_SERVER_ERROR",
