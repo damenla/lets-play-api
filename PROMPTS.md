@@ -268,3 +268,40 @@ Implementa un test que compruebe que un usuario con un token válido, no pueda a
 # 37 - Auth logic improvement
 
 Implementa la lógica necesaria para que el test anterior pase.
+
+# 38 - Group
+
+Quiero poder tener una agrupacion de usuarios.
+
+- Dicha agrupación tendrá un nombre, una descripción y un propietario.
+    - El propietario será el usuario que la cree.
+    - El nombre será único.
+    - La descripción será opcional.
+
+- Un usuario puede pertenecer a varias agrupaciones y una agrupación puede tener varios usuarios.
+- Un usuario puede ser propietario de varias agrupaciones.
+
+- Un usuario autenticado puede crear agrupaciones.
+
+- Los usuarios de la agrupación:
+    - Tendrán uno de los siguientes estados: invitado, aceptado, rechazado o inhabilitado.
+    - Tendrán la fecha en la que se hizo el último cambio de estado.
+    - Tendrán un rol: gestor o miembro.
+
+- El propietario del grupo o los getores del grupo podrán invitar a otros usuarios a pertenecer a su agrupación.
+
+- Un usuario invitado puede aceptar o rechazar la invitación.
+
+Genera un documento de diseño en la carpeta docs/design/ que describa de forma concisa estos cambios.
+
+## Fix 01
+
+Respecto al documento generado, tiene sentido almacenar en el grupo el owner ? ya que vamos a utilizar la tabla de invitaciones para detectar los owners?
+
+# 39 - new migration
+
+Implementa la migración SQL necesarias según el documento de diseño 0004 basandote en las migraciones ya definidas en el proyecto
+
+## Fix 01
+
+- Modifica el documento de diseño y tu propuesta para que la tabla de miembros también contemple la fecha de creación y la fecha de la última actualización
