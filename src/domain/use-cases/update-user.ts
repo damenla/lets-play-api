@@ -1,5 +1,6 @@
 import type { User } from "../../types/user";
 import type { IUserRepository } from "../../infrastructure/persistence/user-repository";
+import { FormatValidator } from "../validation/format-validator";
 
 export class UpdateUserUseCase {
     constructor(private readonly userRepository: IUserRepository) {}
@@ -20,22 +21,14 @@ export class UpdateUserUseCase {
     };
 
     async execute(id: string, updateData: Partial<User>): Promise<User> {
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(id)) {
-            throw new Error(UpdateUserUseCase.Errors.INVALID_UUID.code);
-        }
+        this.validateId(id);
 
         const existingUser = await this.userRepository.findById(id);
         if (!existingUser) {
             throw new Error(UpdateUserUseCase.Errors.USER_NOT_FOUND.code);
         }
 
-        if (updateData.username && updateData.username !== existingUser.username) {
-            const usernameExists = await this.userRepository.findByUsername(updateData.username);
-            if (usernameExists) {
-                throw new Error(UpdateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code);
-            }
-        }
+        await this.validateUpdateData(updateData, existingUser.username);
 
         // Prevent updating ID
         const { id: _, ...safeUpdateData } = updateData;
@@ -47,5 +40,23 @@ export class UpdateUserUseCase {
         }
 
         return updatedUser;
+    }
+
+    private validateId(id: string): void {
+        if (!FormatValidator.isValidUuid(id)) {
+            throw new Error(UpdateUserUseCase.Errors.INVALID_UUID.code);
+        }
+    }
+
+    private async validateUpdateData(
+        updateData: Partial<User>,
+        currentUsername: string
+    ): Promise<void> {
+        if (updateData.username && updateData.username !== currentUsername) {
+            const usernameExists = await this.userRepository.findByUsername(updateData.username);
+            if (usernameExists) {
+                throw new Error(UpdateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code);
+            }
+        }
     }
 }

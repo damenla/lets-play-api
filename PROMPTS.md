@@ -170,3 +170,101 @@ Utiliza el design doc que acabas de generar (docs/design/0002\_...) para actuali
 # 22 - Update TDD
 
 Actualiza los tests relacionados con las modificaciones introducidas en la especificación de OpenAPI.
+
+# 23 - Auth
+
+Quiero realizar las siguiente modificaciones relacionadas con el usuario:
+
+1. Añadir dos nuevos endpoints para permitir el registro de un nuevo usuario y el login de un usuario.
+2. Cuando un usuario se registre o actualice su password, este debe ser hasheado de forma segura.
+3. Cuando un usuario se loguee, se debe generar un token JWT que se debe enviar al cliente y será necesario utilizarlo para acceder a los endpoints protegidos.
+4. Quiero que se protejan todos los endpoints excepto el de registro de usuarios y el de login.
+
+Generame un documento de diseño en la carpeta docs/design/ que describa de forma concisa estos cambios.
+
+# 24 - OpenAPI spec
+
+Utiliza el design doc que acabas de generar (docs/design/0003\_...) para actualizar la especificación de OpenAPI.
+
+# 25 - Update TDD
+
+Actualiza los tests relacionados con las modificaciones introducidas en la especificación de OpenAPI.
+
+# 26 - TDD Password hash tests
+
+Basandote en el design doc 0003_auth.md, implementa los tests relacionados con la generación y validación del hash del password del usuario.
+
+# 27 - Password hash logic
+
+Implementa los tests relacionados con la generación y validación del hash del password del usuario.
+
+# 28 - TDD JWT tests
+
+Basándote en el design doc 0003_auth.md, implementa los tests para la lógica de generación de tokens JWT y la validación de los mismos.
+
+El token debe contener el id del usuario, el username y la fecha de expiración.
+Los tokens deben tener una caducidad de 5 minutos, y debe ser configurable mediante variables de entorno.
+
+# 29 - JWT logic
+
+Implementa la lógica relacionada con la generación y validación del token JWT.
+Y modifica el código para que llame a esta nueva implementación.
+Revisa que todo funcione correctamente y los tests pasan.
+
+# 30 - Refactor - Use Cases Validation
+
+En los casos de uso del proyecto, hay algunos que la validacion de los datos de entrada se hacen en nu método separado y en otros en el mismo método de ejecución.  
+Unifcalo todos para que llamen a un método de validación.
+
+# 31 - Refactor - Format validation
+
+En la aplicación hay validadores de formatos como por ejemplo: uuid, email, ...  
+Puedes identificarlos y proponerme una solución para no tener código duplicado?
+
+# 32 - Fix - Auth
+
+Creo que si intentas crear un usuario devuelve error indicando que no existe el token, en este punto no puede existir token.
+Puedes revisarlo?
+
+## Fix - 01
+
+Tienes razón, no tiene sentido mantener esas dos rutas.
+Para la creación de un usuario nos vamos a quetar solo con la de register.
+
+# 33 - Update curl examples
+
+Actualiza el fichero curl de ejemplos para que tenga en cuenta el funcionamiento actual de la api rest
+
+## Fix - 01
+
+He realizado una prueba creando un usuario y ha sido ok, y cuando he intentado hacer login con dicho usuario ha devuelto un error 500.
+Puedes revisarlo?
+
+## Fix - 02
+
+Puedes revisar las variables de entorno que se utilizan en la app y comprobar que estén en el fichero .env y .env.example?
+
+## Fix - 03
+
+El "Script de prueba automatizado (requiere jq)" no me ha funcionado.  
+Puedes revisarlo?
+
+# 34 - Refactor - curl examples
+
+Separa el fichero docs/curl en varios ficheros:
+
+- api-users: contendrá lo relacionado al enpoint users
+- api-auth: ejemplos relacionados al enpoint auth
+- y Crea una carpeta para la ejecución de flows completos y añade ahí el script.
+
+# 35 - Fix - Login
+
+Cuando el usuario hace login, quiero comprobar que el usuario esté activo o no.
+
+# 36 - TDD - Auth
+
+Implementa un test que compruebe que un usuario con un token válido, no pueda acceder si el usuario está inactivo. Solo implemente el testo, quiero utilizar metodlogia TDD.
+
+# 37 - Auth logic improvement
+
+Implementa la lógica necesaria para que el test anterior pase.

@@ -1,49 +1,14 @@
 import type { Request, Response } from "express";
-import { CreateUserUseCase } from "../../../domain/use-cases/create-user";
 import { GetUserByIdUseCase } from "../../../domain/use-cases/get-user-by-id";
 import { UpdateUserUseCase } from "../../../domain/use-cases/update-user";
 import { UpdatePasswordUseCase } from "../../../domain/use-cases/update-password";
 
 export class UserController {
     constructor(
-        private readonly userCreateUseCase: CreateUserUseCase,
         private readonly getUserByIdUseCase: GetUserByIdUseCase,
         private readonly updateUserUseCase: UpdateUserUseCase,
         private readonly updatePasswordUseCase: UpdatePasswordUseCase
     ) {}
-
-    createUser = async (req: Request, res: Response): Promise<void> => {
-        const { username, email, name, password } = req.body;
-
-        try {
-            const user = await this.userCreateUseCase.execute({ username, email, name, password });
-            res.status(201).json(user);
-        } catch (error) {
-            const isKnownError = error instanceof Error;
-
-            if (
-                isKnownError &&
-                error.message === CreateUserUseCase.Errors.REQUIRED_FIELD_MISSING.code
-            ) {
-                res.status(400).json(CreateUserUseCase.Errors.REQUIRED_FIELD_MISSING);
-            } else if (
-                isKnownError &&
-                error.message === CreateUserUseCase.Errors.INVALID_EMAIL_FORMAT.code
-            ) {
-                res.status(400).json(CreateUserUseCase.Errors.INVALID_EMAIL_FORMAT);
-            } else if (
-                isKnownError &&
-                error.message === CreateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code
-            ) {
-                res.status(409).json(CreateUserUseCase.Errors.USERNAME_ALREADY_EXISTS);
-            } else {
-                res.status(500).json({
-                    code: "INTERNAL_SERVER_ERROR",
-                    message: "Internal Server Error"
-                });
-            }
-        }
-    };
 
     getUserById = async (req: Request, res: Response): Promise<void> => {
         const { id } = req.params;
@@ -103,24 +68,34 @@ export class UserController {
 
     updatePassword = async (req: Request, res: Response): Promise<void> => {
         const { id } = req.params;
-        const { password } = req.body;
+        const { currentPassword, newPassword } = req.body;
 
         try {
-            await this.updatePasswordUseCase.execute(id as string, { password });
+            await this.updatePasswordUseCase.execute(id as string, {
+                currentPassword,
+                newPassword
+            });
             res.status(204).send();
         } catch (error) {
             const isKnownError = error instanceof Error;
 
-            if (
-                isKnownError &&
-                error.message === UpdatePasswordUseCase.Errors.INVALID_UUID.code
-            ) {
+            if (isKnownError && error.message === UpdatePasswordUseCase.Errors.INVALID_UUID.code) {
                 res.status(400).json(UpdatePasswordUseCase.Errors.INVALID_UUID);
             } else if (
                 isKnownError &&
-                error.message === UpdatePasswordUseCase.Errors.PASSWORD_REQUIRED.code
+                error.message === UpdatePasswordUseCase.Errors.CURRENT_PASSWORD_REQUIRED.code
             ) {
-                res.status(400).json(UpdatePasswordUseCase.Errors.PASSWORD_REQUIRED);
+                res.status(400).json(UpdatePasswordUseCase.Errors.CURRENT_PASSWORD_REQUIRED);
+            } else if (
+                isKnownError &&
+                error.message === UpdatePasswordUseCase.Errors.NEW_PASSWORD_REQUIRED.code
+            ) {
+                res.status(400).json(UpdatePasswordUseCase.Errors.NEW_PASSWORD_REQUIRED);
+            } else if (
+                isKnownError &&
+                error.message === UpdatePasswordUseCase.Errors.INVALID_CURRENT_PASSWORD.code
+            ) {
+                res.status(401).json(UpdatePasswordUseCase.Errors.INVALID_CURRENT_PASSWORD);
             } else if (
                 isKnownError &&
                 error.message === UpdatePasswordUseCase.Errors.USER_NOT_FOUND.code

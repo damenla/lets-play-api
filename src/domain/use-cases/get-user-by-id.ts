@@ -1,5 +1,6 @@
 import type { User } from "../../types/user";
 import type { IUserRepository } from "../../infrastructure/persistence/user-repository";
+import { FormatValidator } from "../validation/format-validator";
 
 export class GetUserByIdUseCase {
     constructor(private readonly userRepository: IUserRepository) {}
@@ -16,10 +17,7 @@ export class GetUserByIdUseCase {
     };
 
     async execute(id: string): Promise<User> {
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(id)) {
-            throw new Error(GetUserByIdUseCase.Errors.INVALID_UUID.code);
-        }
+        this.validate(id);
 
         const user = await this.userRepository.findById(id);
         if (!user) {
@@ -27,5 +25,11 @@ export class GetUserByIdUseCase {
         }
 
         return user;
+    }
+
+    private validate(id: string): void {
+        if (!FormatValidator.isValidUuid(id)) {
+            throw new Error(GetUserByIdUseCase.Errors.INVALID_UUID.code);
+        }
     }
 }

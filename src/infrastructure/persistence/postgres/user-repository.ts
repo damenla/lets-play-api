@@ -10,7 +10,16 @@ export class PostgresUserRepository implements IUserRepository {
             RETURNING *
         `;
         const now = new Date();
-        const values = [user.id, user.username, user.email, user.name, passwordHash, user.isActive, now, now];
+        const values = [
+            user.id,
+            user.username,
+            user.email,
+            user.name,
+            passwordHash,
+            user.isActive,
+            now,
+            now
+        ];
 
         const result = await pool.query(query, values);
         return this.mapRowToUser(result.rows[0]);
@@ -99,6 +108,17 @@ export class PostgresUserRepository implements IUserRepository {
     async updatePassword(id: string, passwordHash: string): Promise<void> {
         const query = "UPDATE users SET password = $1, updated_at = $2 WHERE id = $3";
         await pool.query(query, [passwordHash, new Date(), id]);
+    }
+
+    async getPasswordHash(id: string): Promise<string | null> {
+        const query = "SELECT password FROM users WHERE id = $1";
+        const result = await pool.query(query, [id]);
+
+        if (result.rows.length === 0) {
+            return null;
+        }
+
+        return result.rows[0].password;
     }
 
     private mapRowToUser(row: any): User {

@@ -1,16 +1,21 @@
 import { randomUUID } from "node:crypto";
 import type { User } from "../../types/user";
 import type { IUserRepository } from "../../infrastructure/persistence/user-repository";
+import type { IPasswordHasher } from "../services/password-hasher";
+import { FormatValidator } from "../validation/format-validator";
 
-export interface CreateUserDto {
+export interface RegisterUserDto {
     username: string;
     name: string;
     email: string;
     password: string;
 }
 
-export class CreateUserUseCase {
-    constructor(private readonly userRepository: IUserRepository) {}
+export class RegisterUserUseCase {
+    constructor(
+        private readonly userRepository: IUserRepository,
+        private readonly passwordHasher: IPasswordHasher
+    ) {}
 
     static readonly Errors = {
         REQUIRED_FIELD_MISSING: {
@@ -27,8 +32,10 @@ export class CreateUserUseCase {
         }
     };
 
-    async execute(input: CreateUserDto): Promise<User> {
+    async execute(input: RegisterUserDto): Promise<User> {
         await this.validate(input);
+
+        const passwordHash = await this.passwordHasher.hash(input.password);
 
         const newUser: User = {
             id: randomUUID(),
@@ -40,23 +47,22 @@ export class CreateUserUseCase {
             updatedAt: new Date()
         };
 
-        return await this.userRepository.create(newUser, input.password);
+        return await this.userRepository.create(newUser, passwordHash);
     }
 
-    private async validate(input: CreateUserDto): Promise<void> {
+    private async validate(input: RegisterUserDto): Promise<void> {
         const { username, name, email, password } = input;
         if (!username || !email || !name || !password) {
-            throw new Error(CreateUserUseCase.Errors.REQUIRED_FIELD_MISSING.code);
+            throw new Error(RegisterUserUseCase.Errors.REQUIRED_FIELD_MISSING.code);
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            throw new Error(CreateUserUseCase.Errors.INVALID_EMAIL_FORMAT.code);
+        if (!FormatValidator.isValidEmail(email)) {
+            throw new Error(RegisterUserUseCase.Errors.INVALID_EMAIL_FORMAT.code);
         }
 
         const existingUser = await this.userRepository.findByUsername(username);
         if (existingUser) {
-            throw new Error(CreateUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code);
+            throw new Error(RegisterUserUseCase.Errors.USERNAME_ALREADY_EXISTS.code);
         }
     }
 }

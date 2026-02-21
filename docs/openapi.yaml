@@ -2,13 +2,16 @@ openapi: 3.0.0
 info:
     title: API de Partidos de Deportes en Equipo
     description: API para la gestión de usuarios y partidos de deportes en equipo.
-    version: 1.2.0
+    version: 1.3.0
+security:
+    - bearerAuth: []
 paths:
-    /api/users:
+    /api/auth/register:
         post:
-            summary: Crear Usuario
-            description: Crea un nuevo usuario en el sistema. El campo `username` debe ser único; el `email` puede repetirse.
-            operationId: createUser
+            summary: Registrar Usuario
+            description: Registra un nuevo usuario en el sistema. Público.
+            operationId: registerUser
+            security: []
             requestBody:
                 description: Datos del nuevo usuario
                 required: true
@@ -18,7 +21,7 @@ paths:
                             $ref: "#/components/schemas/UserInput"
             responses:
                 "201":
-                    description: Usuario creado exitosamente
+                    description: Usuario registrado exitosamente
                     content:
                         application/json:
                             schema:
@@ -27,6 +30,39 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "409":
                     $ref: "#/components/responses/Conflict"
+    /api/auth/login:
+        post:
+            summary: Iniciar Sesión
+            description: Valida credenciales y devuelve un token JWT. Público.
+            operationId: login
+            security: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                username:
+                                    type: string
+                                password:
+                                    type: string
+                            required:
+                                - username
+                                - password
+            responses:
+                "200":
+                    description: Login exitoso
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    token:
+                                        type: string
+                                        description: Token JWT para autenticación
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
     /api/users/{id}:
         get:
             summary: Obtener Detalles de Usuario
@@ -49,6 +85,8 @@ paths:
                                 $ref: "#/components/schemas/User"
                 "404":
                     $ref: "#/components/responses/NotFound"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
         patch:
             summary: Actualizar Usuario
             description: Actualiza la información de un usuario existente.
@@ -81,6 +119,8 @@ paths:
                     $ref: "#/components/responses/NotFound"
                 "409":
                     $ref: "#/components/responses/Conflict"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
     /api/users/{id}/password:
         patch:
             summary: Actualizar Contraseña de Usuario
@@ -108,26 +148,8 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "404":
                     $ref: "#/components/responses/NotFound"
-    /api/users/test/protected:
-        get:
-            summary: Ruta Protegida de Prueba
-            description: Endpoint para verificar el funcionamiento del middleware de autenticación.
-            operationId: testProtected
-            security:
-                - bearerAuth: []
-            responses:
-                "200":
-                    description: Acceso concedido
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Secret content"
                 "401":
-                    description: No autorizado
+                    $ref: "#/components/responses/Unauthorized"
 
 components:
     securitySchemes:
@@ -216,12 +238,17 @@ components:
         UserPasswordUpdate:
             type: object
             properties:
-                password:
+                currentPassword:
+                    type: string
+                    writeOnly: true
+                    description: Contraseña actual para validación.
+                newPassword:
                     type: string
                     writeOnly: true
                     description: Nueva contraseña (se almacenará como hash).
             required:
-                - password
+                - currentPassword
+                - newPassword
 
     responses:
         BadRequest:
@@ -254,3 +281,13 @@ components:
                             error:
                                 type: string
                                 example: "El username ya está en uso"
+        Unauthorized:
+            description: No autorizado.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        properties:
+                            error:
+                                type: string
+                                example: "Token inválido o no proporcionado"

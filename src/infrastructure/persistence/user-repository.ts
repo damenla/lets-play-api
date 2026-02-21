@@ -7,4 +7,5 @@ export interface IUserRepository {
     findById(id: string): Promise<User | null>;
     update(id: string, user: Partial<User>): Promise<User | null>;
     updatePassword(id: string, passwordHash: string): Promise<void>;
+    getPasswordHash(id: string): Promise<string | null>;
 }

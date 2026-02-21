@@ -39,9 +39,13 @@ export class InMemoryUserRepository implements IUserRepository {
     }
 
     async updatePassword(id: string, passwordHash: string): Promise<void> {
-        if (!this.users.some(u => u.id === id)) {
+        if (!this.users.some((u) => u.id === id)) {
             return;
         }
         this.passwords.set(id, passwordHash);
+    }
+
+    async getPasswordHash(id: string): Promise<string | null> {
+        return this.passwords.get(id) || null;
     }
 }

@@ -29,11 +29,11 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
         const logMessage = `[${logData.timestamp}] ${logData.method} ${logData.url} ${logData.statusCode} ${logData.responseTime}ms ${logData.userAgent} ${logData.ip}`;
 
         if (logData.statusCode >= 500) {
-            console.error(`🧨 ${logMessage}`);
+            console.error(`${logMessage}`);
         } else if (logData.statusCode >= 400) {
-            console.warn(`⚠️ ${logMessage}`);
+            console.warn(`${logMessage}`);
         } else {
-            console.info(`✅ ${logMessage}`);
+            console.info(`${logMessage}`);
         }
 
         return originalEnd.call(res, chunk, encoding);
