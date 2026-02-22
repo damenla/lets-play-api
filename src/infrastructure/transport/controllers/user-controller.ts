@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { GetUserByIdUseCase } from "../../../domain/use-cases/get-user-by-id";
 import { UpdateUserUseCase } from "../../../domain/use-cases/update-user";
 import { UpdatePasswordUseCase } from "../../../domain/use-cases/update-password";
+import { TokenPayload } from "../../../domain/services/token-service";
 
 export class UserController {
     constructor(
@@ -11,10 +12,10 @@ export class UserController {
     ) {}
 
     getUserById = async (req: Request, res: Response): Promise<void> => {
-        const { id } = req.params;
+        const authenticated_user: TokenPayload = (req as any).authenticated_user;
 
         try {
-            const user = await this.getUserByIdUseCase.execute(id as string);
+            const user = await this.getUserByIdUseCase.execute(authenticated_user.id);
             res.status(200).json(user);
         } catch (error) {
             const isKnownError = error instanceof Error;
@@ -36,11 +37,11 @@ export class UserController {
     };
 
     updateUser = async (req: Request, res: Response): Promise<void> => {
-        const { id } = req.params;
+        const authenticated_user: TokenPayload = (req as any).authenticated_user;
         const updateData = req.body;
 
         try {
-            const user = await this.updateUserUseCase.execute(id as string, updateData);
+            const user = await this.updateUserUseCase.execute(authenticated_user.id, updateData);
             res.status(200).json(user);
         } catch (error) {
             const isKnownError = error instanceof Error;
@@ -67,11 +68,11 @@ export class UserController {
     };
 
     updatePassword = async (req: Request, res: Response): Promise<void> => {
-        const { id } = req.params;
+        const authenticated_user: TokenPayload = (req as any).authenticated_user;
         const { currentPassword, newPassword } = req.body;
 
         try {
-            await this.updatePasswordUseCase.execute(id as string, {
+            await this.updatePasswordUseCase.execute(authenticated_user.id, {
                 currentPassword,
                 newPassword
             });

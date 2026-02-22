@@ -27,9 +27,9 @@ export function createUserRouter(userRepository: IUserRepository): Router {
     // Protected routes follow
     router.use(createAuthMiddleware(tokenService, userRepository));
 
-    router.get("/:id", (req, res) => userController.getUserById(req, res));
-    router.patch("/:id", (req, res) => userController.updateUser(req, res));
-    router.patch("/:id/password", (req, res) => userController.updatePassword(req, res));
+    router.get("/me", (req, res) => userController.getUserById(req, res));
+    router.patch("/me", (req, res) => userController.updateUser(req, res));
+    router.patch("/me/password", (req, res) => userController.updatePassword(req, res));
 
     return router;
 }

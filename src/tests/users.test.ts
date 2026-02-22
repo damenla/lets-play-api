@@ -50,45 +50,29 @@ describe("User API", () => {
         });
     });
 
-    describe("GET /api/users/:id", () => {
-        it("should return user by ID with valid token", async () => {
-            const regRes = await request(app).post("/api/auth/register").send({
-                username: "userA",
-                email: "userA@example.com",
-                name: "User A",
-                password: "passwordA"
-            });
-            const userId = regRes.body.id;
-
+    describe("GET /api/users/me", () => {
+        it("should return the authenticated user profile", async () => {
             const response = await request(app)
-                .get(`/api/users/${userId}`)
+                .get("/api/users/me")
                 .set(getAuthHeader())
                 .expect(200);
 
-            expect(response.body.id).toBe(userId);
-            expect(response.body.username).toBe("userA");
+            expect(response.body.username).toBe("mainuser");
+            expect(response.body).not.toHaveProperty("password");
         });
 
         it("should return 401 if token is missing", async () => {
-            await request(app).get("/api/users/some-id").expect(401);
+            await request(app).get("/api/users/me").expect(401);
         });
     });
 
-    describe("PATCH /api/users/:id/password", () => {
+    describe("PATCH /api/users/me/password", () => {
         it("should update password when current password is correct", async () => {
-            const regRes = await request(app).post("/api/auth/register").send({
-                username: "pwduser",
-                email: "pwd@test.com",
-                name: "Pwd User",
-                password: "oldpassword"
-            });
-            const userId = regRes.body.id;
-
             await request(app)
-                .patch(`/api/users/${userId}/password`)
+                .patch("/api/users/me/password")
                 .set(getAuthHeader())
                 .send({
-                    currentPassword: "oldpassword",
+                    currentPassword: "password123",
                     newPassword: "newpassword123"
                 })
                 .expect(204);
@@ -96,21 +80,13 @@ describe("User API", () => {
             // Verify login with new password works
             await request(app)
                 .post("/api/auth/login")
-                .send({ username: "pwduser", password: "newpassword123" })
+                .send({ username: "mainuser", password: "newpassword123" })
                 .expect(200);
         });
 
         it("should return 401 when current password is incorrect", async () => {
-            const regRes = await request(app).post("/api/auth/register").send({
-                username: "pwduser2",
-                email: "pwd2@test.com",
-                name: "Pwd User 2",
-                password: "correctpassword"
-            });
-            const userId = regRes.body.id;
-
             await request(app)
-                .patch(`/api/users/${userId}/password`)
+                .patch("/api/users/me/password")
                 .set(getAuthHeader())
                 .send({
                     currentPassword: "wrongpassword",

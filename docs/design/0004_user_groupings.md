@@ -17,7 +17,7 @@ Representa una agrupación creada por un usuario.
 Tabla asociativa para la relación muchos-a-muchos entre usuarios y grupos, con metadatos de membresía.
 - `group_id`: UUID (Foreign Key -> `groups.id`)
 - `user_id`: UUID (Foreign Key -> `users.id`)
-- `status`: ENUM ('invited', 'accepted', 'rejected', 'disabled')
+- `status`: ENUM ('invited', 'accepted', 'rejected')
 - `role`: ENUM ('owner', 'manager', 'member')
 - `status_updated_at`: TIMESTAMP (Fecha del último cambio de estado)
 - `created_at`: TIMESTAMP (Fecha de creación del registro/invitación)
@@ -31,14 +31,13 @@ Tabla asociativa para la relación muchos-a-muchos entre usuarios y grupos, con 
 - El creador se registra automáticamente en `group_members` con `status='accepted'` y `role='owner'`, convirtiéndose en el primer propietario.
 
 ### Roles y Permisos
-- **Propietario (Owner)**: Fuente de verdad para la propiedad del grupo. Tiene control total, incluyendo la capacidad de desactivar el grupo, cambiar metadatos, y gestionar gestores u otros propietarios.
-- **Gestores (Manager)**: Pueden invitar miembros, gestionar el estado de miembros existentes (excepto propietarios) y editar información básica.
+- **Propietario (Owner)**: Fuente de verdad para la propiedad del grupo. Tiene control total, incluyendo la capacidad de desactivar el grupo, cambiar metadatos (nombre, descripción), y gestionar gestores u otros propietarios.
+- **Gestores (Manager)**: Pueden invitar miembros y gestionar el estado de miembros existentes (excepto propietarios). No pueden editar información básica del grupo.
 - **Miembro (Member)**: Participante activo sin permisos de gestión.
 
 ### Regla de Mínimo de Propietarios
 - Una agrupación debe tener **siempre al menos un propietario activo**.
 - No se permitirá que el último propietario activo abandone el grupo o cambie su rol a uno inferior sin haber nombrado a otro propietario activo previamente.
-- No se puede desactivar (status='disabled') al último propietario activo de un grupo.
 
 ### Invitaciones
 - Solo los usuarios con rol `owner` o `manager` dentro de un grupo pueden invitar a otros usuarios.

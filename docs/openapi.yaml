@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
     title: API de Partidos de Deportes en Equipo
-    description: API para la gestión de usuarios y partidos de deportes en equipo.
-    version: 1.3.0
+    description: API para la gestión de usuarios, agrupaciones y partidos.
+    version: 1.4.0
 security:
     - bearerAuth: []
 paths:
@@ -12,8 +12,9 @@ paths:
             description: Registra un nuevo usuario en el sistema. Público.
             operationId: registerUser
             security: []
+            tags:
+                - Authentication
             requestBody:
-                description: Datos del nuevo usuario
                 required: true
                 content:
                     application/json:
@@ -30,12 +31,15 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "409":
                     $ref: "#/components/responses/Conflict"
+
     /api/auth/login:
         post:
             summary: Iniciar Sesión
             description: Valida credenciales y devuelve un token JWT. Público.
             operationId: login
             security: []
+            tags:
+                - Authentication
             requestBody:
                 required: true
                 content:
@@ -63,19 +67,14 @@ paths:
                                         description: Token JWT para autenticación
                 "401":
                     $ref: "#/components/responses/Unauthorized"
-    /api/users/{id}:
+
+    /api/users/me:
         get:
-            summary: Obtener Detalles de Usuario
-            description: Obtiene la información de un usuario por su ID.
-            operationId: getUser
-            parameters:
-                - name: id
-                  in: path
-                  description: ID único del usuario (UUID)
-                  required: true
-                  schema:
-                      type: string
-                      format: uuid
+            summary: Obtener Perfil Propio
+            description: Obtiene la información del usuario autenticado a través del token.
+            operationId: getMyProfile
+            tags:
+                - Users
             responses:
                 "200":
                     description: Detalles del usuario
@@ -83,24 +82,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/User"
-                "404":
-                    $ref: "#/components/responses/NotFound"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
         patch:
-            summary: Actualizar Usuario
-            description: Actualiza la información de un usuario existente.
-            operationId: updateUser
-            parameters:
-                - name: id
-                  in: path
-                  description: ID único del usuario (UUID)
-                  required: true
-                  schema:
-                      type: string
-                      format: uuid
+            summary: Actualizar Perfil Propio
+            description: Actualiza la información del usuario autenticado.
+            operationId: updateMyProfile
+            tags:
+                - Users
             requestBody:
-                description: Datos a actualizar
                 required: true
                 content:
                     application/json:
@@ -115,27 +105,19 @@ paths:
                                 $ref: "#/components/schemas/User"
                 "400":
                     $ref: "#/components/responses/BadRequest"
-                "404":
-                    $ref: "#/components/responses/NotFound"
-                "409":
-                    $ref: "#/components/responses/Conflict"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
-    /api/users/{id}/password:
+                "409":
+                    $ref: "#/components/responses/Conflict"
+
+    /api/users/me/password:
         patch:
-            summary: Actualizar Contraseña de Usuario
-            description: Actualiza únicamente la contraseña de un usuario existente.
-            operationId: updatePassword
-            parameters:
-                - name: id
-                  in: path
-                  description: ID único del usuario (UUID)
-                  required: true
-                  schema:
-                      type: string
-                      format: uuid
+            summary: Actualizar Contraseña Propia
+            description: Cambia la contraseña del usuario autenticado.
+            operationId: updateMyPassword
+            tags:
+                - Users
             requestBody:
-                description: Nueva contraseña
                 required: true
                 content:
                     application/json:
@@ -146,10 +128,216 @@ paths:
                     description: Contraseña actualizada exitosamente
                 "400":
                     $ref: "#/components/responses/BadRequest"
-                "404":
-                    $ref: "#/components/responses/NotFound"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+
+    /api/groups:
+        get:
+            summary: Listar mis grupos
+            description: Lista las agrupaciones donde el usuario es miembro o dueño.
+            operationId: listMyGroups
+            tags:
+                - Groups
+            responses:
+                "200":
+                    description: Lista de grupos
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Group"
+        post:
+            summary: Crear Agrupación
+            description: Crea una nueva agrupación y asigna al creador como dueño.
+            operationId: createGroup
+            tags:
+                - Groups
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/GroupInput"
+            responses:
+                "201":
+                    description: Grupo creado
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Group"
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "409":
+                    $ref: "#/components/responses/Conflict"
+
+    /api/groups/{id}:
+        get:
+            summary: Obtener detalle de grupo
+            description: Obtiene la información de un grupo si el usuario es miembro.
+            operationId: getGroupById
+            tags:
+                - Groups
+            parameters:
+                - $ref: "#/components/parameters/Id"
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Group"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    $ref: "#/components/responses/NotFound"
+        patch:
+            summary: Actualizar grupo (Metadatos o Estado)
+            description: Actualiza nombre, descripción o estado de activación. Solo Owners.
+            operationId: updateGroup
+            tags:
+                - Groups
+            parameters:
+                - $ref: "#/components/parameters/Id"
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/GroupUpdate"
+            responses:
+                "200":
+                    description: Grupo actualizado
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Group"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "409":
+                    $ref: "#/components/responses/Conflict"
+
+    /api/groups/{id}/members:
+        get:
+            summary: Listar miembros del grupo
+            description: Obtiene la lista de miembros y sus estados. Solo miembros.
+            operationId: getGroupMembers
+            tags:
+                - Group Members
+            parameters:
+                - $ref: "#/components/parameters/Id"
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/GroupMember"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+        post:
+            summary: Invitar miembro
+            description: Envía una invitación a un usuario. Solo Owners/Managers.
+            operationId: inviteMember
+            tags:
+                - Group Members
+            parameters:
+                - $ref: "#/components/parameters/Id"
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                userId:
+                                    type: string
+                                    format: uuid
+            responses:
+                "201":
+                    description: Invitación enviada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GroupMember"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "409":
+                    $ref: "#/components/responses/Conflict"
+
+    /api/groups/{id}/invitations:
+        patch:
+            summary: Gestionar mi invitación
+            description: Aceptar o rechazar una invitación a un grupo.
+            operationId: manageInvitation
+            tags:
+                - Group Members
+            parameters:
+                - $ref: "#/components/parameters/Id"
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                status:
+                                    type: string
+                                    enum: [accepted, rejected]
+            responses:
+                "200":
+                    description: Estado actualizado
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "409":
+                    $ref: "#/components/responses/Conflict"
+
+    /api/groups/{id}/members/me:
+        delete:
+            summary: Salir del grupo
+            description: El usuario autenticado abandona el grupo. No permitido para el último dueño.
+            operationId: leaveGroup
+            tags:
+                - Group Members
+            parameters:
+                - $ref: "#/components/parameters/Id"
+            responses:
+                "204":
+                    description: Salida exitosa
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+
+    /api/groups/{id}/members/{userId}/role:
+        patch:
+            summary: Cambiar rol de un miembro
+            description: Cambia el rol de un miembro. Reglas de antigüedad para Owners.
+            operationId: changeMemberRole
+            tags:
+                - Group Members
+            parameters:
+                - $ref: "#/components/parameters/Id"
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                role:
+                                    type: string
+                                    enum: [owner, manager, member]
+            responses:
+                "200":
+                    description: Rol actualizado
+                "403":
+                    $ref: "#/components/responses/Forbidden"
 
 components:
     securitySchemes:
@@ -157,137 +345,119 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+    parameters:
+        Id:
+            name: id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
     schemas:
         User:
             type: object
             properties:
-                id:
-                    type: string
-                    format: uuid
-                    description: Identificador único del usuario.
-                username:
-                    type: string
-                    description: Nombre de usuario único del usuario.
-                email:
-                    type: string
-                    format: email
-                    description: Correo electrónico de contacto (no es único).
-                name:
-                    type: string
-                    description: Nombre completo del usuario.
-                isActive:
-                    type: boolean
-                    description: Indica si el usuario está activo.
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: Fecha de creación.
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: Fecha de última actualización.
-            required:
-                - id
-                - username
-                - email
-                - name
-                - isActive
-                - createdAt
-                - updatedAt
+                id: { type: string, format: uuid }
+                username: { type: string }
+                email: { type: string, format: email }
+                name: { type: string }
+                isActive: { type: boolean }
+                createdAt: { type: string, format: date-time }
+                updatedAt: { type: string, format: date-time }
 
         UserInput:
             type: object
+            required: [username, email, name, password]
             properties:
-                username:
-                    type: string
-                    description: Nombre de usuario único. Usado para autenticación.
-                email:
-                    type: string
-                    format: email
-                    description: Correo electrónico de contacto (no es único).
-                name:
-                    type: string
-                    description: Nombre completo del usuario.
-                password:
-                    type: string
-                    writeOnly: true
-                    description: Contraseña del usuario (se almacenará como hash).
-            required:
-                - username
-                - email
-                - name
-                - password
+                username: { type: string }
+                email: { type: string, format: email }
+                name: { type: string }
+                password: { type: string, writeOnly: true }
 
         UserUpdate:
             type: object
             properties:
-                username:
-                    type: string
-                    description: Nuevo nombre de usuario (debe ser único).
-                email:
-                    type: string
-                    format: email
-                    description: Nuevo correo electrónico.
-                name:
-                    type: string
-                    description: Nuevo nombre.
-                isActive:
-                    type: boolean
-                    description: Nuevo estado.
+                username: { type: string }
+                email: { type: string, format: email }
+                name: { type: string }
+                isActive: { type: boolean }
 
         UserPasswordUpdate:
             type: object
+            required: [currentPassword, newPassword]
             properties:
-                currentPassword:
-                    type: string
-                    writeOnly: true
-                    description: Contraseña actual para validación.
-                newPassword:
-                    type: string
-                    writeOnly: true
-                    description: Nueva contraseña (se almacenará como hash).
-            required:
-                - currentPassword
-                - newPassword
+                currentPassword: { type: string, writeOnly: true }
+                newPassword: { type: string, writeOnly: true }
+
+        Group:
+            type: object
+            properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+                description: { type: string }
+                isActive: { type: boolean }
+                createdAt: { type: string, format: date-time }
+                updatedAt: { type: string, format: date-time }
+
+        GroupInput:
+            type: object
+            required: [name]
+            properties:
+                name: { type: string }
+                description: { type: string }
+
+        GroupUpdate:
+            type: object
+            properties:
+                name: { type: string }
+                description: { type: string }
+                isActive: { type: boolean }
+
+        GroupMember:
+            type: object
+            properties:
+                groupId: { type: string, format: uuid }
+                userId: { type: string, format: uuid }
+                status: { type: string, enum: [invited, accepted, rejected] }
+                role: { type: string, enum: [owner, manager, member] }
+                statusUpdatedAt: { type: string, format: date-time }
+                createdAt: { type: string, format: date-time }
+                updatedAt: { type: string, format: date-time }
 
     responses:
         BadRequest:
-            description: Solicitud incorrecta (ej. datos de validación fallidos).
+            description: Error en los datos enviados.
             content:
                 application/json:
                     schema:
-                        type: object
-                        properties:
-                            error:
-                                type: string
-                                example: "Email inválido"
+                        $ref: "#/components/schemas/Error"
+        Unauthorized:
+            description: No autenticado.
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        Forbidden:
+            description: Permisos insuficientes.
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
         NotFound:
             description: Recurso no encontrado.
             content:
                 application/json:
                     schema:
-                        type: object
-                        properties:
-                            error:
-                                type: string
-                                example: "Usuario no encontrado"
+                        $ref: "#/components/schemas/Error"
         Conflict:
-            description: Conflicto (ej. username ya existente).
+            description: Conflicto de estado o duplicidad.
             content:
                 application/json:
                     schema:
-                        type: object
-                        properties:
-                            error:
-                                type: string
-                                example: "El username ya está en uso"
-        Unauthorized:
-            description: No autorizado.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        properties:
-                            error:
-                                type: string
-                                example: "Token inválido o no proporcionado"
+                        $ref: "#/components/schemas/Error"
+
+        Error:
+            type: object
+            properties:
+                code: { type: string }
+                message: { type: string }

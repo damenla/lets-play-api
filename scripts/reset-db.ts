@@ -1,6 +1,7 @@
 import {
     connectDatabase,
     disconnectDatabase,
+    ensureDatabaseExists,
     pool
 } from "../src/infrastructure/database/connection";
 
@@ -8,11 +9,13 @@ async function resetDatabase() {
     try {
         console.log("🗑️  Starting database reset...");
 
+        await ensureDatabaseExists();
         await connectDatabase();
 
         // Drop all tables in reverse order (due to constraints)
-        await pool.query("DROP SEQUENCE IF EXISTS factura_number_seq CASCADE;");
-        await pool.query("DROP TABLE IF EXISTS facturas CASCADE;");
+        await pool.query("DROP TABLE IF EXISTS group_members CASCADE;");
+        await pool.query("DROP TABLE IF EXISTS groups CASCADE;");
+        await pool.query("DROP TABLE IF EXISTS users CASCADE;");
         await pool.query("DROP TABLE IF EXISTS migrations CASCADE;");
 
         console.log("✅ Database reset completed successfully");

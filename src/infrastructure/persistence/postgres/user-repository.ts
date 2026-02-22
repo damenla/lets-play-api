@@ -1,8 +1,10 @@
-import { pool } from "../../database/connection";
-import type { IUserRepository } from "../user-repository";
+import type { Pool } from "pg";
 import type { User } from "../../../types/user";
+import type { IUserRepository } from "../user-repository";
 
 export class PostgresUserRepository implements IUserRepository {
+    constructor(private readonly pool: Pool) {}
+
     async create(user: User, passwordHash: string): Promise<User> {
         const query = `
             INSERT INTO users (id, username, email, name, password, is_active, created_at, updated_at)
@@ -21,13 +23,13 @@ export class PostgresUserRepository implements IUserRepository {
             now
         ];
 
-        const result = await pool.query(query, values);
+        const result = await this.pool.query(query, values);
         return this.mapRowToUser(result.rows[0]);
     }
 
     async findByEmail(email: string): Promise<User | null> {
         const query = "SELECT * FROM users WHERE email = $1";
-        const result = await pool.query(query, [email]);
+        const result = await this.pool.query(query, [email]);
 
         if (result.rows.length === 0) {
             return null;
@@ -38,7 +40,7 @@ export class PostgresUserRepository implements IUserRepository {
 
     async findByUsername(username: string): Promise<User | null> {
         const query = "SELECT * FROM users WHERE username = $1";
-        const result = await pool.query(query, [username]);
+        const result = await this.pool.query(query, [username]);
 
         if (result.rows.length === 0) {
             return null;
@@ -49,7 +51,7 @@ export class PostgresUserRepository implements IUserRepository {
 
     async findById(id: string): Promise<User | null> {
         const query = "SELECT * FROM users WHERE id = $1";
-        const result = await pool.query(query, [id]);
+        const result = await this.pool.query(query, [id]);
 
         if (result.rows.length === 0) {
             return null;
@@ -96,7 +98,7 @@ export class PostgresUserRepository implements IUserRepository {
             RETURNING *
         `;
 
-        const result = await pool.query(query, values);
+        const result = await this.pool.query(query, values);
 
         if (result.rows.length === 0) {
             return null;
@@ -107,12 +109,12 @@ export class PostgresUserRepository implements IUserRepository {
 
     async updatePassword(id: string, passwordHash: string): Promise<void> {
         const query = "UPDATE users SET password = $1, updated_at = $2 WHERE id = $3";
-        await pool.query(query, [passwordHash, new Date(), id]);
+        await this.pool.query(query, [passwordHash, new Date(), id]);
     }
 
     async getPasswordHash(id: string): Promise<string | null> {
         const query = "SELECT password FROM users WHERE id = $1";
-        const result = await pool.query(query, [id]);
+        const result = await this.pool.query(query, [id]);
 
         if (result.rows.length === 0) {
             return null;

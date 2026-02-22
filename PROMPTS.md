@@ -305,3 +305,147 @@ Implementa la migración SQL necesarias según el documento de diseño 0004 basa
 ## Fix 01
 
 - Modifica el documento de diseño y tu propuesta para que la tabla de miembros también contemple la fecha de creación y la fecha de la última actualización
+
+# 40 - TDD - POST /api/groups
+
+Quiero seguir la metodologia TDD.  
+Quiero que empieces a crear los tests relacionados con la creación del grupo según lo definido en el documento de diseño 0004.  
+Limítate a la creación de los tests.
+
+## 1 - POST /api/groups logic
+
+Comienza por ahí pero limitate a eso y me propones proximos pasos.
+
+## Antes de continuar, crees que CreateGroupDto (src/types/group.ts) debería moverse a su caso de uso?
+
+---
+
+# 41 - TDD - GET /api/groups
+
+Quiero seguir la metodologia TDD.  
+Quiero que empieces a crear los tests relacionados con la obtención de grupos según lo definido en el documento de diseño 0004.  
+Limítate a la creación de los tests.
+
+## 1 - GET /api/groups logic
+
+Implementa la lógica para los GET del enpdoint /api/groups según lo definido en el documento de diseño 0004.
+Comienza por ahí pero limitate a eso y me propones proximos pasos.
+
+# 42 - TDD - members management
+
+Quiero seguir la metodologia TDD.  
+Quiero que empieces a crear los tests relacionados con la gestión de miembros según lo definido en el documento de diseño 0004.  
+Limítate a la creación de los tests.
+
+## 1 inmplement members logic
+
+Implementa la lógica para la gestión de miembros según lo definido en el documento de diseño 0004.
+Comienza por ahí pero limitate a eso y me propones proximos pasos.
+
+### Adjustments
+
+- Recuerda, las validaciones deben ir en un método de validacion
+- El estado de la invitacion para que pueda ser aceptada debe ser "invited"
+
+# 43 - TDD - members management
+
+Quiero seguir la metodologia TDD.  
+Quiero que empieces a crear los tests relacionados con la gestión de miembros según lo definido en el documento de diseño 0004.  
+Limítate a la creación de los tests.
+
+Además:
+
+- Solo el owner puede degradar roles, y solo el owner más antiguo activo puede degradar a otro owner.
+- Un owner puede promocionar a un member a manager.
+- Un owner puede promocionar a un manager a owner.
+- Un manager intentando cambiar roles (debe fallar con 403).
+- Un member intentando cambiar roles (debe fallar con 403).
+- Impedir que el último owner se degrade a sí mismo a un rol inferior (regla de mínimo de propietarios).
+- Validar roles inválidos.
+
+## 1 inmplement members logic
+
+Implementa la lógica para la gestión de miembros según lo definido en el documento de diseño 0004.
+Comienza por ahí pero limitate a eso y me propones proximos pasos.
+
+# 44 - TDD - members leave group
+
+Quiero seguir la metodologia TDD.  
+Quiero que empieces a crear los tests relacionados con la salida de miembros del grupo según lo definido en el documento de diseño 0004.  
+Limítate a la creación de los tests.
+
+## 1 inmplement leave group logic
+
+Implementa la lógica para la salida de miembros del grupo según lo definido en el documento de diseño 0004.
+Comienza por ahí pero limitate a eso y me propones proximos pasos.
+
+# 45 - Fix security design errors
+
+Acabo de darme cuenta de fallo de seguridad en el diseño actual.
+
+Las peticiones que necesitan un userId, se le están pasando como parámetro en la URL y no lo está cogiendo del token, que si que lleva el userId del usuario autenticado.
+
+Puedes revisarlo y proponerme los cambios necesarios?
+
+# 46 - TDD disable/enable group
+
+Quiero seguir la metodologia TDD.  
+Quiero que empieces a crear los tests relacionados con la desactivación y reactivación de grupos según lo definido en el documento de diseño 0004.
+Además, quiero que tengas en cuenta que un grupo solo puede ser desactivado por el owner activo más antiguo y puede ser reactivado por cualquier owner activo.
+Limítate a la creación de los tests.
+
+## Adjustmens
+
+### 1
+
+Quiero que revises en profundidad este test. Creo que no está bien. Tengo la impresión que las pruebas con distintos usuarios de mismo role no están bien.
+
+### 2
+
+Antes de ejecutar los tests, quiero que compruebes el resto de tests para que aplica esto que acabamos de ver. Tómate tu tiempo
+
+### 3
+
+Seguro que has restaurado todo lo antiguo. Creo que siguen faltando tests.
+
+- Revisa toda las implementaciones que hay relacionados con los grupos y los miembros de los grupos.
+- Ten en cuenta la Seniority
+- Tomate tu tiempo, esto es un punto critico de la app.
+
+## 1 implement disable/enable group logic
+
+Implementa la lógica para la desactivación y reactivación de grupos según lo definido en el documento de diseño 0004.
+Comienza por ahí pero limitate a eso y me propones proximos pasos.
+
+# 47 - Check missing design
+
+Antes de continuar, puedes comprobar si falta algo que esté definido en el documento de diseño 0004?
+
+## 1 - Modify design
+
+Si, pero quiero hacer unos cambios:
+
+- name y description solo van a poder modificarlos los owners.
+- el método para desactivar usuarios se ha implementado como eliminar usuario. No es necesario implementarlo. Quita las referencias en el diseño.
+
+# 48 - PostgresGroupRepository
+
+Implementa ahora la persistencia de los grupos en la base de datos así como las migraciones necesarias.
+
+# 49 - Check openapi
+
+Basándote en todo lo que ya ha implementado, puedes comprobar que esté recogido en el documento openapi.  
+Tomate tu tiempo.
+
+# 50 - Update documentation
+
+Actualiza la documentación existente o crea la documentación técnica necesaria:
+
+- Ejemplos de peticiones curl en la carpeta docs/curl/
+- En la carpeta docs/curl/flows añade los flujos que faltan.
+
+## Adjustments
+
+- El script "group-management-flow.sh" no está funcionando. Revisalo
+
+- Estoy ejecutando el comando "sh docs/curl/flows/group-management-flow.sh", parece que ha funcionado porque no devuelve error, pero cuando compruebo los datos en postgre no aparecen. Revisalo

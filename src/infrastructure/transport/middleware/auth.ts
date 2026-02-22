@@ -24,10 +24,10 @@ export function createAuthMiddleware(tokenService: ITokenService, userRepository
         }
 
         try {
-            const decoded = tokenService.verifyToken(token);
+            const token_decoded = tokenService.verifyToken(token);
 
             // Check if user still exists and is active
-            const user = await userRepository.findById(decoded.id);
+            const user = await userRepository.findById(token_decoded.id);
             if (!user) {
                 res.status(401).json({
                     code: "UNAUTHORIZED",
@@ -45,7 +45,8 @@ export function createAuthMiddleware(tokenService: ITokenService, userRepository
             }
 
             // Inject user info into request for further use
-            (req as any).user = decoded;
+            (req as any).authenticated_user = token_decoded;
+
             next();
         } catch (error) {
             res.status(401).json({

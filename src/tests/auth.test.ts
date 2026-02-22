@@ -79,19 +79,20 @@ describe("Auth API", () => {
             });
             const userId = regRes.body.id;
 
-            // Get a token from another user to deactivate it
+            // Login to get a token for THAT user
             const loginRes = await request(app)
                 .post("/api/auth/login")
-                .send({ username: testUser.username, password: testUser.password });
+                .send({ username: "inactive_user", password: "password123" });
             const token = loginRes.body.token;
 
-            // Deactivate the user
+            // Deactivate the user using THEIR OWN token and /me
             await request(app)
-                .patch(`/api/users/${userId}`)
+                .patch("/api/users/me")
                 .set("Authorization", `Bearer ${token}`)
-                .send({ isActive: false });
+                .send({ isActive: false })
+                .expect(200);
 
-            // Try to login
+            // Try to login again
             const response = await request(app)
                 .post("/api/auth/login")
                 .send({ username: "inactive_user", password: "password123" })
@@ -103,11 +104,9 @@ describe("Auth API", () => {
 
     describe("JWT Authorization", () => {
         let token: string;
-        let userId: string;
 
         beforeEach(async () => {
-            const regRes = await request(app).post("/api/auth/register").send(testUser);
-            userId = regRes.body.id;
+            await request(app).post("/api/auth/register").send(testUser);
 
             const loginRes = await request(app)
                 .post("/api/auth/login")
@@ -117,14 +116,14 @@ describe("Auth API", () => {
 
         it("should allow access with valid JWT token", async () => {
             await request(app)
-                .get(`/api/users/${userId}`)
+                .get("/api/users/me")
                 .set("Authorization", `Bearer ${token}`)
                 .expect(200);
         });
 
         it("should return 401 for invalid JWT token", async () => {
             await request(app)
-                .get(`/api/users/${userId}`)
+                .get("/api/users/me")
                 .set("Authorization", "Bearer invalid-token")
                 .expect(401);
         });
@@ -132,14 +131,14 @@ describe("Auth API", () => {
         it("should return 403 when user has a valid token but account is inactive", async () => {
             // Deactivate the user
             await request(app)
-                .patch(`/api/users/${userId}`)
+                .patch("/api/users/me")
                 .set("Authorization", `Bearer ${token}`)
                 .send({ isActive: false })
                 .expect(200);
 
             // Try to access a protected route with the same token
             const response = await request(app)
-                .get(`/api/users/${userId}`)
+                .get("/api/users/me")
                 .set("Authorization", `Bearer ${token}`)
                 .expect(403);
 

@@ -8,22 +8,21 @@ export API_URL="http://localhost:3000"
 
 # Se requiere un token obtenido mediante login (ver api-auth.md)
 export AUTH_TOKEN="<TU_TOKEN_AQUÍ>"
-export USER_ID="<ID_DEL_USUARIO>"
 ```
 
-## 1. Obtener un usuario por ID (Protegido)
+## 1. Obtener perfil del usuario autenticado (/me)
 
 ```bash
-curl -i -X GET $API_URL/api/users/$USER_ID \
+curl -i -X GET $API_URL/api/users/me \
   -H "Authorization: Bearer $AUTH_TOKEN"
 ```
 
 **Respuesta esperada:** Status 200 OK con los datos del usuario.
 
-## 2. Actualizar datos de usuario (Protegido)
+## 2. Actualizar datos del usuario autenticado (/me)
 
 ```bash
-curl -i -X PATCH $API_URL/api/users/$USER_ID \
+curl -i -X PATCH $API_URL/api/users/me \
   -H "Authorization: Bearer $AUTH_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -34,10 +33,10 @@ curl -i -X PATCH $API_URL/api/users/$USER_ID \
 
 **Respuesta esperada:** Status 200 OK con el usuario actualizado.
 
-## 3. Actualizar contraseña (Protegido)
+## 3. Actualizar contraseña (/me/password)
 
 ```bash
-curl -i -X PATCH $API_URL/api/users/$USER_ID/password \
+curl -i -X PATCH $API_URL/api/users/me/password \
   -H "Authorization: Bearer $AUTH_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -51,7 +50,7 @@ curl -i -X PATCH $API_URL/api/users/$USER_ID/password \
 ## 4. Probar error de autorización (Token faltante)
 
 ```bash
-curl -i -X GET $API_URL/api/users/$USER_ID
+curl -i -X GET $API_URL/api/users/me
 ```
 
 **Respuesta esperada:** Status 401 Unauthorized.

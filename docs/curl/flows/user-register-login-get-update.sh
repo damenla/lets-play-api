@@ -34,18 +34,18 @@ if [ "$TOKEN" == "null" ] || [ -z "$TOKEN" ]; then
 fi
 echo "Token obtenido con éxito."
 
-echo "\n3. Consultando datos (Ruta protegida)..."
-curl -s -X GET $API_URL/api/users/$USER_ID \
+echo "\n3. Consultando datos (Ruta protegida /me)..."
+curl -s -X GET $API_URL/api/users/me \
   -H "Authorization: Bearer $TOKEN" | jq '.'
 
-echo "\n4. Actualizando nombre..."
-curl -s -X PATCH $API_URL/api/users/$USER_ID \
+echo "\n4. Actualizando nombre (/me)..."
+curl -s -X PATCH $API_URL/api/users/me \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name": "Tester Updated"}' | jq '.'
 
-echo "\n5. Actualizando contraseña..."
-PWD_RES=$(curl -i -s -X PATCH $API_URL/api/users/$USER_ID/password \
+echo -e "\n5. Actualizando contraseña (/me/password)..."
+PWD_RES=$(curl -i -s -X PATCH $API_URL/api/users/me/password \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"currentPassword": "password123", "newPassword": "newpassword456"}')
