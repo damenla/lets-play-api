@@ -3,16 +3,28 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const config: PoolConfig = {
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || "5432"),
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    max: parseInt(process.env.DB_POOL_MAX || "10"),
-    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || "10000"),
-    connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || "2000")
-};
+const connectionString = process.env.DATABASE_URL;
+const isProduction = process.env.NODE_ENV === "production";
+
+const config: PoolConfig = connectionString
+    ? {
+          connectionString,
+          ssl: isProduction ? { rejectUnauthorized: false } : false,
+          max: parseInt(process.env.DB_POOL_MAX || "10"),
+          idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || "10000"),
+          connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || "2000")
+      }
+    : {
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.DB_PORT || "5432"),
+          database: process.env.DB_NAME,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          max: parseInt(process.env.DB_POOL_MAX || "10"),
+          idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || "10000"),
+          connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || "2000"),
+          ssl: isProduction ? { rejectUnauthorized: false } : false
+      };
 
 export const pool = new Pool(config);
 

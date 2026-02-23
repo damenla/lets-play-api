@@ -28,6 +28,8 @@ RUN npm ci --only=production && \
 
 # Copy built artifacts from builder stage
 COPY --from=builder /app/dist ./dist
+# Copy migrations explicitly because they are not compiled by tsc
+COPY --from=builder /app/src/infrastructure/database/migrations ./dist/infrastructure/database/migrations
 
 # Create a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
