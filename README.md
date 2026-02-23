@@ -182,33 +182,53 @@ Flujos clave del sistema disponibles en `docs/diagrams/`:
 
 - **[Ejemplos Prácticos](./docs/curl/)**: Scripts para probar flujos completos.
 
----
+### 🗺 Hoja de Ruta (Roadmap)
 
-## 7. Funcionalidades Principales
+- **[Próximos Pasos](./docs/NEXT_STEPS.md)**: Planificación estratégica para la evolución de la API, portal web y aplicaciones móviles.
 
-### 🔐 Gestión de Usuarios
+### 🤖 Ingeniería de Prompts (Curiosidad Técnica)
 
-- Registro con validación de email y username únicos.
-- Autenticación segura mediante JWT.
-- Perfiles de usuario actualizables.
+Como parte del proceso de desarrollo asistido por IA, se han documentado las estrategias de prompts utilizadas para la generación y refinamiento de la lógica de negocio:
 
-### 👥 Grupos de Usuarios
-
-- Creación y gestión de grupos deportivos.
-- Sistema de invitaciones y roles (Owner, Manager, Member).
-- Gestión de membresías (unirse/abandonar grupos).
-
-### ⚽ Gestión de Partidos (Matches)
-
-- Creación de partidos asociados a grupos específicos.
-- Control de capacidad, precios y ubicación.
-- Inscripción y desinscripción dinámica de jugadores.
-- **Locking**: Cierre automático de inscripciones antes del evento.
-- **Penalizaciones**: Identificación de cancelaciones de última hora.
+- **[Prompts de Desarrollo](./docs/PROMPTS.md)**: Registro de interacciones y directrices seguidas para la construcción de la API.
 
 ---
 
-## 6. Pruebas y Calidad
+## 7. Funcionalidades Destacadas (Core Features)
+
+El sistema implementa lógica de negocio avanzada que lo diferencia de una API de gestión convencional:
+
+### 🏆 Sistema de Reputación y Méritos
+
+Cada grupo deportivo funciona como una entidad autónoma con su propio "sistema de castigos y recompensas":
+
+- **Configuración Granular**: Los administradores definen puntos por jugar, por actitud positiva/negativa y por ausencias.
+- **Ranking de Mérito**: Los puntos acumulados determinan la prioridad de los miembros en la inscripción de futuros partidos.
+- **Evaluación Post-Partido**: Sistema de actas donde se registra la asistencia real y el comportamiento de cada participante.
+
+### ⚽ Ciclo de Vida Inteligente del Partido
+
+Gestión de estados diseñada para la logística real de eventos deportivos:
+
+- **Late Cancellation Protection**: Lógica de tiempo real que detecta cancelaciones fuera de plazo (ej. menos de 12h antes) y aplica penalizaciones de mérito automáticamente sin eliminar el registro histórico.
+- **Locking System**: Una vez evaluado el partido, se bloquea (`is_locked: true`) para proteger la integridad de los datos históricos y las estadísticas de los usuarios.
+- **Control de Reservas**: Gestión automática de plazas y paso a lista de espera cuando se supera la capacidad.
+
+### 🔐 Seguridad y Control de Acceso (RBAC)
+
+Modelo de permisos jerárquico basado en el contexto del grupo:
+
+- **Owner**: Poder absoluto sobre el grupo y su configuración.
+- **Manager**: Gestión operativa (crear partidos, evaluar jugadores, invitar miembros).
+- **Member**: Participación activa y visualización de estadísticas.
+
+### 🛠 Flexibilidad de Persistencia
+
+- **Dual-Mode Persistence**: La arquitectura permite conmutar en tiempo de ejecución entre PostgreSQL y una base de datos en memoria (`IN_MEMORY_DATA=true`), facilitando despliegues rápidos para demos o entornos de pruebas aislados.
+
+---
+
+## 8. Pruebas y Calidad
 
 El proyecto cuenta con una suite de tests automatizados para asegurar la integridad de los casos de uso:
 
@@ -254,6 +274,14 @@ Sigue el flujo de **Clean Architecture**:
 
 - **Commits**: Se sigue la convención [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`).
 - **Estilo**: Se utiliza `prettier` para el formato automático.
+
+---
+
+## 10. Licencia
+
+Este proyecto es propiedad exclusiva de **Daniel Mendoza Lara**. Todos los derechos están reservados. El acceso público a este repositorio se concede únicamente para fines de visualización académica y evaluación. Queda prohibida cualquier forma de reproducción, distribución o uso comercial sin autorización previa.
+
+Consulte el archivo [LICENSE](./LICENSE) para más detalles.
 
 ---
 
