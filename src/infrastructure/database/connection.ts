@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const connectionString = process.env.DATABASE_URL;
+const dbName = connectionString ? new URL(connectionString).pathname.slice(1) : process.env.DB_NAME;
 const isProduction = process.env.NODE_ENV === "production";
 
 const config: PoolConfig = connectionString
@@ -29,7 +30,6 @@ const config: PoolConfig = connectionString
 export const pool = new Pool(config);
 
 export const ensureDatabaseExists = async (): Promise<void> => {
-    const dbName = process.env.DB_NAME;
     const adminConfig: PoolConfig = {
         ...config,
         database: "postgres" // Connect to default admin db

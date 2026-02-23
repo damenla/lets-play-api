@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    participant A as Admin Grupo
+    participant API as API Express
+    participant DB as PostgreSQL
+    participant P as Participante
+
+    Note over A, API: Creación de Partido (Role Owner)
+    A->>API: POST /api/groups/:id/matches
+    API->>DB: Check role (Owner/Manager)
+    API->>DB: Insert Match (status: PLANNING)
+    API-->>A: 201 Match Created
+
+    Note over P, DB: Registro de Participante
+    P->>API: POST /api/matches/:id/join
+    API->>DB: Check membership (ACCEPTED)
+    API->>DB: Check Match Status (PLANNING)
+    API->>DB: Check Capacity & existing join
+    API->>DB: Insert Registration (isReserve=false)
+    API-->>P: 200 Registered
+
+    Note over P, API: Abandono (Política de Penalización)
+    P->>API: DELETE /api/matches/:id/leave
+    API->>DB: Check Match Time vs Current Time
+    API->>DB: Check Registration exists
+    
+    alt isLateCancellation? (Merit Config)
+        API->>DB: Update Registration (isLateCancellation=TRUE)
+        Note right of API: Penalización aplicada
+    else isEarlyCancellation?
+        API->>DB: Delete Registration
+        Note right of API: Sin penalización
+    end
+    API-->>P: 200 OK (Registration Removed/Marked)
+
+    Note over A, DB: Cierre de Acta (Post-Partido)
+    A->>API: POST /api/matches/:id/lock
+    API->>DB: Validate status (FINISHED)
+    API->>DB: Update Match (isLocked=TRUE)
+    API-->>A: 200 Locked

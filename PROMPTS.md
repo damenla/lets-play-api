@@ -551,3 +551,63 @@ Antes de continuar revisa detenidamente los tipos, Creo que no es correcto
 Por favor, revisa el test que has generado y asegurate muy bien de que se cubren todos los escenarios definidos en el documento de diseño 0005.
 
 No me importa que necesites más tiempo de lo normal, este punto es crítico.
+
+# README.md
+
+Este proyecto es mi TFM de un master que estoy realizando.
+
+Como parte de la documentación del proyecto, te pido que me crees un README.md que contenga la siguiente información:
+
+Documentación completa y detallada (README.md).
+a. Descripción general del proyecto.
+b. Stack tecnológico utilizado.
+c. Información sobre su instalación y ejecución.
+d. Estructura del proyecto.
+e. Funcionalidades principales.
+
+Actualmente ya existe un README.md, pero quiero que lo actualices para que contenga la información que se indica arriba.
+Además, mira de que forma puedes incluir lo que ya existía en esta nueva versión.
+
+## Adjustments
+
+### 1
+
+Quiero que analices en profundidad todas las variables de entorno que se utilizan en la app, y generes una sección en el README dedicada a las variables de entorno que utiliza la app y expliques para que se utilizan y las cosas que haya que tener en cuenta al definirlas. Tomate tu tiempo
+
+### 2
+
+- La variable JWT_EXPIRES_IN, es incorrecta tanto el nombre que has puesto como los valores permitidos y el por defecto.
+- Actualiza las referencias que encontraste como "1h" o similar para que no haya confusion.
+
+### 3
+
+Hay una carpeta en el raiz (/docs) que contiene documentación. Analizala en profundida y proponme como añadirlo al reamde para que aporte valor. Tomate tu tiempo
+
+### 4
+
+Quiero que crees diagramas de lujo de mermaid para los procesos definidos, pero no los añadas de momento al readme.
+
+### 5
+
+Quiero que compruebes exhaustivamente cada uno de los diagramas mermaid que has creado, y te asegures al 100% que son fieles a lo implementado en la app.  
+Tomate tu tiempo
+
+### 6
+
+Los colores del diagrama clean-architecture, son dificiles de ver y no se si el diagrama me termina de convencer. Puedes modificar los colores y el aspecto para darle un tono mas profesional
+
+### 7
+
+Crea un diagrama mermaid con el modelo de datos. Hazo de forma profesional. Tomate tu tiempo
+
+### 8
+
+Revisa el diagrama del modelo exhaustivaente para que sea 100% idéntico al modelo de la app. Creo que faltan campos. Tomate tu tiempo
+
+### 9
+
+Si tu fueras un progrmador que tienes que continuar el desarrollo del proyecto. Añade al readme información que falta y te fuera util.
+
+### 10
+
+Revisa de nuevo las variables de entorno que se utilizan en el proyecto y actualiza el fichero readme (solo la parte de variables de entorno). Hazlo Exhasutivamente. Tomate tu tiempo.

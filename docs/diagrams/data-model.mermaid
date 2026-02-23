@@ -1,0 +1,76 @@
+erDiagram
+    %% Entities Definition based strictly on SQL Migrations
+
+    USERS {
+        UUID id PK
+        VARCHAR username UK
+        VARCHAR email UK
+        VARCHAR password "Hashed"
+        VARCHAR name
+        BOOLEAN is_active "Default: TRUE"
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    GROUPS {
+        UUID id PK
+        VARCHAR name UK
+        TEXT description
+        BOOLEAN is_active "Default: TRUE"
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        INTEGER merit_config_max_matches "Default: 10"
+        INTEGER merit_points_played "Default: 3"
+        INTEGER merit_points_no_show "Default: -5"
+        INTEGER merit_points_reserve "Default: 1"
+        INTEGER merit_points_positive_attitude "Default: 1"
+        INTEGER merit_points_negative_attitude "Default: -1"
+        INTEGER merit_config_hours_before_penalty "Default: 12"
+        INTEGER merit_points_late_cancel "Default: -2"
+    }
+
+    GROUP_MEMBERS {
+        UUID group_id PK, FK
+        UUID user_id PK, FK
+        VARCHAR status "invited, accepted, rejected"
+        VARCHAR role "owner, manager, member"
+        TIMESTAMP status_updated_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    MATCHES {
+        UUID id PK
+        UUID group_id FK
+        VARCHAR sport "football, basketball, padel"
+        TIMESTAMP scheduled_at
+        INTEGER duration_minutes
+        INTEGER capacity
+        TEXT location
+        VARCHAR status "planning, playing, finished, cancelled"
+        BOOLEAN is_locked "Default: FALSE"
+        VARCHAR team_a_color "Default: #000000"
+        VARCHAR team_b_color "Default: #FFFFFF"
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    MATCH_REGISTRATIONS {
+        UUID match_id PK, FK
+        UUID user_id PK, FK
+        TIMESTAMP registered_at
+        BOOLEAN is_reserve "Default: FALSE"
+        BOOLEAN did_play "Nullable"
+        VARCHAR attitude "positive, neutral, negative"
+        BOOLEAN is_late_cancellation "Default: FALSE"
+    }
+
+    %% Relationships (Crow's Foot Notation)
+
+    USERS ||--o{ GROUP_MEMBERS : "is member of"
+    GROUPS ||--o{ GROUP_MEMBERS : "has members"
+    
+    GROUPS ||--o{ MATCHES : "organizes"
+    
+    USERS ||--o{ MATCH_REGISTRATIONS : "registers for"
+    MATCHES ||--o{ MATCH_REGISTRATIONS : "has participants"

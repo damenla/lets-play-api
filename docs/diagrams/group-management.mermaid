@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant O as Owner (Creador)
+    participant API as API Express
+    participant DB as PostgreSQL
+    participant M as Usuario Invitado
+
+    Note over O, API: Creación de Grupo
+    O->>API: POST /api/groups {name, config}
+    API->>DB: Check name uniqueness
+    API->>DB: Insert Group
+    API->>DB: Insert Member (userId=Owner, status=ACCEPTED, role=OWNER)
+    API-->>O: 201 Group Created
+
+    Note over O, M: Flujo de Invitación
+    O->>API: POST /api/groups/:id/invitations {targetUserId}
+    API->>DB: Validate inviter permissions (Owner/Manager)
+    API->>DB: Validate target user exists
+    API->>DB: Insert Member (userId=Target, status=INVITED, role=MEMBER)
+    API-->>O: 201 Invited
+
+    Note over M, DB: Aceptación
+    M->>API: PUT /api/groups/invitations/:id {status: ACCEPTED}
+    API->>DB: Verify invitation exists (status=INVITED)
+    API->>DB: Update Member (status=ACCEPTED)
+    API-->>M: 200 OK (Joined Group)

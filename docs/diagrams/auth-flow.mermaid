@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    participant U as Usuario
+    participant API as API Express
+    participant S as Security Service
+    participant DB as PostgreSQL
+
+    Note over U, DB: Proceso de Registro
+    U->>API: POST /api/auth/register
+    API->>DB: Check uniqueness (username)
+    DB-->>API: Is Unique
+    API->>S: hashPassword(raw)
+    Note right of S: Bcrypt Hashing
+    S-->>API: bcrypted_hash
+    API->>DB: Save User {hash}
+    API-->>U: 201 Created
+
+    Note over U, DB: Autenticación (Login)
+    U->>API: POST /api/auth/login
+    API->>DB: Get User by username
+    DB-->>API: User Data
+    API->>DB: Get Password Hash
+    DB-->>API: Hash
+    API->>S: compare(raw, hash)
+    S-->>API: Match OK
+    API->>S: generateToken(payload)
+    Note right of S: Payload: { id, username }
+    S-->>API: Signed JWT
+    API-->>U: 200 OK + Token
