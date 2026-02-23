@@ -2,15 +2,18 @@ import type { Application } from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../app";
+import { clearDatabase } from "./db-utils";
 
 describe("User API", () => {
     let app: Application;
     let authToken: string;
 
     beforeEach(async () => {
+        await clearDatabase();
         // Set JWT secret for tests
         process.env.JWT_SECRET = "test-secret";
-        app = createApp(true);
+        const useInMemory = process.env.IN_MEMORY_DATA !== "false";
+        app = createApp(useInMemory);
 
         // Register and login a default user for tokens
         await request(app).post("/api/auth/register").send({

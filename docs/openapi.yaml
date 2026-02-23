@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
     title: API de Partidos de Deportes en Equipo
-    description: API para la gestión de usuarios, agrupaciones y partidos.
-    version: 1.4.0
+    description: API para la gestión de usuarios, agrupaciones y partidos con sistema dinámico de méritos.
+    version: 1.5.0
 security:
     - bearerAuth: []
 paths:
@@ -12,8 +12,7 @@ paths:
             description: Registra un nuevo usuario en el sistema. Público.
             operationId: registerUser
             security: []
-            tags:
-                - Authentication
+            tags: [Authentication]
             requestBody:
                 required: true
                 content:
@@ -27,10 +26,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/User"
-                "400":
-                    $ref: "#/components/responses/BadRequest"
-                "409":
-                    $ref: "#/components/responses/Conflict"
+                "400": { $ref: "#/components/responses/BadRequest" }
+                "409": { $ref: "#/components/responses/Conflict" }
 
     /api/auth/login:
         post:
@@ -38,8 +35,7 @@ paths:
             description: Valida credenciales y devuelve un token JWT. Público.
             operationId: login
             security: []
-            tags:
-                - Authentication
+            tags: [Authentication]
             requestBody:
                 required: true
                 content:
@@ -47,13 +43,9 @@ paths:
                         schema:
                             type: object
                             properties:
-                                username:
-                                    type: string
-                                password:
-                                    type: string
-                            required:
-                                - username
-                                - password
+                                username: { type: string }
+                                password: { type: string }
+                            required: [username, password]
             responses:
                 "200":
                     description: Login exitoso
@@ -62,186 +54,157 @@ paths:
                             schema:
                                 type: object
                                 properties:
-                                    token:
-                                        type: string
-                                        description: Token JWT para autenticación
-                "401":
-                    $ref: "#/components/responses/Unauthorized"
+                                    token: { type: string, description: Token JWT }
+                "401": { $ref: "#/components/responses/Unauthorized" }
 
     /api/users/me:
         get:
             summary: Obtener Perfil Propio
-            description: Obtiene la información del usuario autenticado a través del token.
             operationId: getMyProfile
-            tags:
-                - Users
+            tags: [Users]
             responses:
                 "200":
                     description: Detalles del usuario
                     content:
                         application/json:
-                            schema:
-                                $ref: "#/components/schemas/User"
-                "401":
-                    $ref: "#/components/responses/Unauthorized"
+                            schema: { $ref: "#/components/schemas/User" }
+                "401": { $ref: "#/components/responses/Unauthorized" }
         patch:
             summary: Actualizar Perfil Propio
-            description: Actualiza la información del usuario autenticado.
             operationId: updateMyProfile
-            tags:
-                - Users
+            tags: [Users]
             requestBody:
                 required: true
                 content:
                     application/json:
-                        schema:
-                            $ref: "#/components/schemas/UserUpdate"
+                        schema: { $ref: "#/components/schemas/UserUpdate" }
             responses:
                 "200":
-                    description: Usuario actualizado exitosamente
                     content:
                         application/json:
-                            schema:
-                                $ref: "#/components/schemas/User"
-                "400":
-                    $ref: "#/components/responses/BadRequest"
-                "401":
-                    $ref: "#/components/responses/Unauthorized"
-                "409":
-                    $ref: "#/components/responses/Conflict"
-
-    /api/users/me/password:
-        patch:
-            summary: Actualizar Contraseña Propia
-            description: Cambia la contraseña del usuario autenticado.
-            operationId: updateMyPassword
-            tags:
-                - Users
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: "#/components/schemas/UserPasswordUpdate"
-            responses:
-                "204":
-                    description: Contraseña actualizada exitosamente
-                "400":
-                    $ref: "#/components/responses/BadRequest"
-                "401":
-                    $ref: "#/components/responses/Unauthorized"
+                            schema: { $ref: "#/components/schemas/User" }
+                "400": { $ref: "#/components/responses/BadRequest" }
+                "409": { $ref: "#/components/responses/Conflict" }
 
     /api/groups:
         get:
             summary: Listar mis grupos
-            description: Lista las agrupaciones donde el usuario es miembro o dueño.
             operationId: listMyGroups
-            tags:
-                - Groups
+            tags: [Groups]
             responses:
                 "200":
-                    description: Lista de grupos
                     content:
                         application/json:
                             schema:
                                 type: array
-                                items:
-                                    $ref: "#/components/schemas/Group"
+                                items: { $ref: "#/components/schemas/Group" }
         post:
             summary: Crear Agrupación
-            description: Crea una nueva agrupación y asigna al creador como dueño.
+            description: Crea una agrupación con configuración de méritos por defecto o personalizada. Solo Owners.
             operationId: createGroup
-            tags:
-                - Groups
+            tags: [Groups]
             requestBody:
                 required: true
                 content:
                     application/json:
-                        schema:
-                            $ref: "#/components/schemas/GroupInput"
+                        schema: { $ref: "#/components/schemas/GroupInput" }
             responses:
                 "201":
-                    description: Grupo creado
                     content:
                         application/json:
-                            schema:
-                                $ref: "#/components/schemas/Group"
-                "400":
-                    $ref: "#/components/responses/BadRequest"
-                "409":
-                    $ref: "#/components/responses/Conflict"
+                            schema: { $ref: "#/components/schemas/Group" }
+                "400": { $ref: "#/components/responses/BadRequest" }
+                "409": { $ref: "#/components/responses/Conflict" }
 
     /api/groups/{id}:
         get:
             summary: Obtener detalle de grupo
-            description: Obtiene la información de un grupo si el usuario es miembro.
             operationId: getGroupById
-            tags:
-                - Groups
-            parameters:
-                - $ref: "#/components/parameters/Id"
+            tags: [Groups]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
             responses:
                 "200":
                     content:
                         application/json:
-                            schema:
-                                $ref: "#/components/schemas/Group"
-                "403":
-                    $ref: "#/components/responses/Forbidden"
-                "404":
-                    $ref: "#/components/responses/NotFound"
+                            schema: { $ref: "#/components/schemas/Group" }
+                "403": { $ref: "#/components/responses/Forbidden" }
+                "404": { $ref: "#/components/responses/NotFound" }
         patch:
-            summary: Actualizar grupo (Metadatos o Estado)
-            description: Actualiza nombre, descripción o estado de activación. Solo Owners.
+            summary: Actualizar grupo
+            description: Actualiza metadatos, estado o configuración de méritos. Solo Owners.
             operationId: updateGroup
-            tags:
-                - Groups
-            parameters:
-                - $ref: "#/components/parameters/Id"
+            tags: [Groups]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
             requestBody:
                 content:
                     application/json:
-                        schema:
-                            $ref: "#/components/schemas/GroupUpdate"
+                        schema: { $ref: "#/components/schemas/GroupUpdate" }
             responses:
                 "200":
-                    description: Grupo actualizado
                     content:
                         application/json:
-                            schema:
-                                $ref: "#/components/schemas/Group"
-                "403":
-                    $ref: "#/components/responses/Forbidden"
-                "409":
-                    $ref: "#/components/responses/Conflict"
+                            schema: { $ref: "#/components/schemas/Group" }
+                "403": { $ref: "#/components/responses/Forbidden" }
 
-    /api/groups/{id}/members:
+    /api/groups/{id}/matches:
         get:
-            summary: Listar miembros del grupo
-            description: Obtiene la lista de miembros y sus estados. Solo miembros.
-            operationId: getGroupMembers
-            tags:
-                - Group Members
-            parameters:
-                - $ref: "#/components/parameters/Id"
+            summary: Listar partidos de un grupo
+            description: Obtiene todos los partidos organizados por el grupo. Solo miembros.
+            operationId: listGroupMatches
+            tags: [Matches]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
             responses:
                 "200":
                     content:
                         application/json:
                             schema:
                                 type: array
-                                items:
-                                    $ref: "#/components/schemas/GroupMember"
-                "403":
-                    $ref: "#/components/responses/Forbidden"
+                                items: { $ref: "#/components/schemas/Match" }
+                "403": { $ref: "#/components/responses/Forbidden" }
+
+    /api/matches:
         post:
-            summary: Invitar miembro
-            description: Envía una invitación a un usuario. Solo Owners/Managers.
-            operationId: inviteMember
-            tags:
-                - Group Members
-            parameters:
-                - $ref: "#/components/parameters/Id"
+            summary: Crear un nuevo partido
+            description: Organiza un encuentro deportivo. Solo Owners.
+            operationId: createMatch
+            tags: [Matches]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema: { $ref: "#/components/schemas/MatchInput" }
+            responses:
+                "201":
+                    content:
+                        application/json:
+                            schema: { $ref: "#/components/schemas/Match" }
+                "403": { $ref: "#/components/responses/Forbidden" }
+
+    /api/matches/{id}:
+        patch:
+            summary: Actualizar metadatos del partido
+            description: Modifica ubicación, capacidad o colores. No permitido si está bloqueado. Solo Owners.
+            operationId: updateMatch
+            tags: [Matches]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
+            requestBody:
+                content:
+                    application/json:
+                        schema: { $ref: "#/components/schemas/MatchUpdate" }
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema: { $ref: "#/components/schemas/Match" }
+                "403": { $ref: "#/components/responses/Forbidden" }
+
+    /api/matches/{id}/status:
+        patch:
+            summary: Cambiar estado del partido
+            description: Gestiona el ciclo de vida (planning -> playing -> finished). Sella reservas al pasar a 'playing'. Solo Owners.
+            operationId: updateMatchStatus
+            tags: [Matches]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
             requestBody:
                 required: true
                 content:
@@ -249,80 +212,77 @@ paths:
                         schema:
                             type: object
                             properties:
-                                userId:
-                                    type: string
-                                    format: uuid
+                                status: { $ref: "#/components/schemas/MatchStatus" }
             responses:
-                "201":
-                    description: Invitación enviada
+                "200":
+                    content:
+                        application/json:
+                            schema: { $ref: "#/components/schemas/Match" }
+                "400": { $ref: "#/components/responses/BadRequest" }
+                "403": { $ref: "#/components/responses/Forbidden" }
+
+    /api/matches/{id}/lock:
+        patch:
+            summary: Bloquear partido
+            description: Hace el partido inmutable. Solo permitido para partidos en estado 'finished'. Solo Owners.
+            operationId: lockMatch
+            tags: [Matches]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
+            responses:
+                "200": { description: Partido bloqueado exitosamente }
+                "400": { $ref: "#/components/responses/BadRequest" }
+                "403": { $ref: "#/components/responses/Forbidden" }
+
+    /api/matches/{id}/participants:
+        get:
+            summary: Listar participantes (Orden de Mérito)
+            description: Obtiene la lista de inscritos ordenada dinámicamente por sus puntos de mérito históricos. Incluye cálculo de reserva.
+            operationId: listParticipants
+            tags: [Participants]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
+            responses:
+                "200":
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/GroupMember"
-                "403":
-                    $ref: "#/components/responses/Forbidden"
-                "409":
-                    $ref: "#/components/responses/Conflict"
-
-    /api/groups/{id}/invitations:
-        patch:
-            summary: Gestionar mi invitación
-            description: Aceptar o rechazar una invitación a un grupo.
-            operationId: manageInvitation
-            tags:
-                - Group Members
-            parameters:
-                - $ref: "#/components/parameters/Id"
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                status:
-                                    type: string
-                                    enum: [accepted, rejected]
+                                type: array
+                                items: { $ref: "#/components/schemas/MatchRegistrationWithMerit" }
+        post:
+            summary: Apuntarse a un partido
+            description: Registra al usuario autenticado. Solo en estado 'planning'.
+            operationId: joinMatch
+            tags: [Participants]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
             responses:
-                "200":
-                    description: Estado actualizado
-                "403":
-                    $ref: "#/components/responses/Forbidden"
-                "409":
-                    $ref: "#/components/responses/Conflict"
+                "201":
+                    content:
+                        application/json:
+                            schema: { $ref: "#/components/schemas/MatchRegistration" }
+                "403": { $ref: "#/components/responses/Forbidden" }
 
-    /api/groups/{id}/members/me:
+    /api/matches/{id}/participants/me:
         delete:
-            summary: Salir del grupo
-            description: El usuario autenticado abandona el grupo. No permitido para el último dueño.
-            operationId: leaveGroup
-            tags:
-                - Group Members
-            parameters:
-                - $ref: "#/components/parameters/Id"
+            summary: Salirse de un partido
+            description: El usuario abandona el partido. Si es tarde (según config del grupo), se mantiene el registro con penalización.
+            operationId: leaveMatch
+            tags: [Participants]
+            parameters: [{ $ref: "#/components/parameters/Id" }]
             responses:
-                "204":
-                    description: Salida exitosa
-                "400":
-                    $ref: "#/components/responses/BadRequest"
-                "403":
-                    $ref: "#/components/responses/Forbidden"
+                "200": { description: Salida procesada }
+                "403": { $ref: "#/components/responses/Forbidden" }
 
-    /api/groups/{id}/members/{userId}/role:
+    /api/matches/{id}/participants/{userId}/evaluation:
         patch:
-            summary: Cambiar rol de un miembro
-            description: Cambia el rol de un miembro. Reglas de antigüedad para Owners.
-            operationId: changeMemberRole
-            tags:
-                - Group Members
+            summary: Evaluar participación
+            description: Confirma si el usuario asistió y su actitud. Solo en estado 'finished'. Solo Owners.
+            operationId: evaluateParticipant
+            tags: [Participants]
             parameters:
-                - $ref: "#/components/parameters/Id"
+                - { $ref: "#/components/parameters/Id" }
                 - name: userId
                   in: path
                   required: true
-                  schema:
-                      type: string
-                      format: uuid
+                  schema: { type: string, format: uuid }
             requestBody:
                 required: true
                 content:
@@ -330,14 +290,11 @@ paths:
                         schema:
                             type: object
                             properties:
-                                role:
-                                    type: string
-                                    enum: [owner, manager, member]
+                                didPlay: { type: boolean }
+                                attitude: { $ref: "#/components/schemas/PlayerAttitude" }
             responses:
-                "200":
-                    description: Rol actualizado
-                "403":
-                    $ref: "#/components/responses/Forbidden"
+                "200": { description: Evaluación guardada }
+                "403": { $ref: "#/components/responses/Forbidden" }
 
 components:
     securitySchemes:
@@ -350,9 +307,7 @@ components:
             name: id
             in: path
             required: true
-            schema:
-                type: string
-                format: uuid
+            schema: { type: string, format: uuid }
     schemas:
         User:
             type: object
@@ -382,13 +337,6 @@ components:
                 name: { type: string }
                 isActive: { type: boolean }
 
-        UserPasswordUpdate:
-            type: object
-            required: [currentPassword, newPassword]
-            properties:
-                currentPassword: { type: string, writeOnly: true }
-                newPassword: { type: string, writeOnly: true }
-
         Group:
             type: object
             properties:
@@ -398,6 +346,14 @@ components:
                 isActive: { type: boolean }
                 createdAt: { type: string, format: date-time }
                 updatedAt: { type: string, format: date-time }
+                meritConfigMaxMatches: { type: integer, default: 10 }
+                meritPointsPlayed: { type: integer, default: 3 }
+                meritPointsNoShow: { type: integer, default: -5 }
+                meritPointsReserve: { type: integer, default: 1 }
+                meritPointsPositiveAttitude: { type: integer, default: 1 }
+                meritPointsNegativeAttitude: { type: integer, default: -1 }
+                meritConfigHoursBeforePenalty: { type: integer, default: 12 }
+                meritPointsLateCancel: { type: integer, default: -2 }
 
         GroupInput:
             type: object
@@ -405,6 +361,14 @@ components:
             properties:
                 name: { type: string }
                 description: { type: string }
+                meritConfigMaxMatches: { type: integer }
+                meritPointsPlayed: { type: integer }
+                meritPointsNoShow: { type: integer }
+                meritPointsReserve: { type: integer }
+                meritPointsPositiveAttitude: { type: integer }
+                meritPointsNegativeAttitude: { type: integer }
+                meritConfigHoursBeforePenalty: { type: integer }
+                meritPointsLateCancel: { type: integer }
 
         GroupUpdate:
             type: object
@@ -412,49 +376,102 @@ components:
                 name: { type: string }
                 description: { type: string }
                 isActive: { type: boolean }
+                meritConfigMaxMatches: { type: integer }
+                meritPointsPlayed: { type: integer }
+                meritPointsNoShow: { type: integer }
+                meritPointsReserve: { type: integer }
+                meritPointsPositiveAttitude: { type: integer }
+                meritPointsNegativeAttitude: { type: integer }
+                meritConfigHoursBeforePenalty: { type: integer }
+                meritPointsLateCancel: { type: integer }
 
-        GroupMember:
+        RGB:
             type: object
             properties:
+                r: { type: number, minimum: 0, maximum: 1 }
+                g: { type: number, minimum: 0, maximum: 1 }
+                b: { type: number, minimum: 0, maximum: 1 }
+
+        SportType: { type: string, enum: [football, basketball, padel] }
+        MatchStatus: { type: string, enum: [planning, playing, finished, cancelled] }
+        PlayerAttitude: { type: string, enum: [positive, negative, neutral] }
+
+        Match:
+            type: object
+            properties:
+                id: { type: string, format: uuid }
                 groupId: { type: string, format: uuid }
-                userId: { type: string, format: uuid }
-                status: { type: string, enum: [invited, accepted, rejected] }
-                role: { type: string, enum: [owner, manager, member] }
-                statusUpdatedAt: { type: string, format: date-time }
+                sport: { $ref: "#/components/schemas/SportType" }
+                scheduledAt: { type: string, format: date-time }
+                durationMinutes: { type: integer }
+                capacity: { type: integer }
+                location: { type: string }
+                status: { $ref: "#/components/schemas/MatchStatus" }
+                isLocked: { type: boolean }
+                teamAColor: { $ref: "#/components/schemas/RGB" }
+                teamBColor: { $ref: "#/components/schemas/RGB" }
                 createdAt: { type: string, format: date-time }
                 updatedAt: { type: string, format: date-time }
 
+        MatchInput:
+            type: object
+            required: [groupId, sport, scheduledAt, durationMinutes, capacity, location, teamAColor, teamBColor]
+            properties:
+                groupId: { type: string, format: uuid }
+                sport: { $ref: "#/components/schemas/SportType" }
+                scheduledAt: { type: string, format: date-time }
+                durationMinutes: { type: integer }
+                capacity: { type: integer }
+                location: { type: string }
+                teamAColor: { $ref: "#/components/schemas/RGB" }
+                teamBColor: { $ref: "#/components/schemas/RGB" }
+
+        MatchUpdate:
+            type: object
+            properties:
+                sport: { $ref: "#/components/schemas/SportType" }
+                scheduledAt: { type: string, format: date-time }
+                durationMinutes: { type: integer }
+                capacity: { type: integer }
+                location: { type: string }
+                teamAColor: { $ref: "#/components/schemas/RGB" }
+                teamBColor: { $ref: "#/components/schemas/RGB" }
+
+        MatchRegistration:
+            type: object
+            properties:
+                matchId: { type: string, format: uuid }
+                userId: { type: string, format: uuid }
+                registeredAt: { type: string, format: date-time }
+                isReserve: { type: boolean }
+                didPlay: { type: boolean, nullable: true }
+                attitude: { $ref: "#/components/schemas/PlayerAttitude" }
+                isLateCancellation: { type: boolean }
+
+        MatchRegistrationWithMerit:
+            allOf:
+                - $ref: "#/components/schemas/MatchRegistration"
+                - type: object
+                  properties:
+                      totalMeritPoints: { type: integer, description: Puntos acumulados en los últimos partidos }
+                      isReserveCalculated: { type: boolean, description: Si el usuario es reserva según el ranking actual y capacidad }
+
     responses:
         BadRequest:
-            description: Error en los datos enviados.
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
+            description: Error en los datos.
+            content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
         Unauthorized:
             description: No autenticado.
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
+            content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
         Forbidden:
-            description: Permisos insuficientes.
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
+            description: Permisos insuficientes o recurso bloqueado.
+            content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
         NotFound:
             description: Recurso no encontrado.
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
+            content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
         Conflict:
             description: Conflicto de estado o duplicidad.
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
+            content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
 
         Error:
             type: object

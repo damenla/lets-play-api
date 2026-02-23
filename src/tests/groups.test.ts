@@ -2,13 +2,16 @@ import type { Application } from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../app";
+import { clearDatabase } from "./db-utils";
 
 describe("Groups API - Comprehensive Suite", () => {
     let app: Application;
 
     beforeEach(async () => {
+        await clearDatabase();
         process.env.JWT_SECRET = "test-secret";
-        app = createApp(true);
+        const useInMemory = process.env.IN_MEMORY_DATA !== "false";
+        app = createApp(useInMemory);
     });
 
     const auth = (token: string) => ({ Authorization: `Bearer ${token}` });

@@ -449,3 +449,105 @@ Actualiza la documentación existente o crea la documentación técnica necesari
 - El script "group-management-flow.sh" no está funcionando. Revisalo
 
 - Estoy ejecutando el comando "sh docs/curl/flows/group-management-flow.sh", parece que ha funcionado porque no devuelve error, pero cuando compruebo los datos en postgre no aparecen. Revisalo
+
+# 51 - Design new feature: match organization
+
+Quiero poder organizar partidos para distintos deportes de equipo.
+
+Los partidos se organizan en torno a un grupo.
+
+Los partidos tendrán como información:
+
+- Fecha y hora. Requerido.
+- Duración. Requerido. Formato "1h", "1h30m", "2h", etc.
+- Número de jugadores. Requerido.
+- Ubicación. Requerido.
+- Deporte. En principio solo para futbol, pero quiero que el diseño sea escalable para poder añadir otros deportes en el futuro.
+- Tendrá un estado: planificando, jugando, finalizado, cancelado.
+- Color de los equipos. Requerido. Formato "#RRGGBB".
+
+Solo los owners del grupo pueden organizar partidos, modificar la información del partido y su estado.
+
+Podrán apuntarse / salirse del partido:
+
+- miembros del grupo cuya membresía en el grupo sea activa
+- mientras el estado del partido sea "planificando".
+
+Quiero que si el número de miembros que se apuntan al partido es superior al número de jugadores, haya un sistema de méritos para decidir quiénes entran y quiénes se quedan fuera. Se me ocurre que pueda ser por número de partidos jugados dentro del grupo, pero estoy abierto a sugerencias.
+
+Quiero que me crees un documento de diseño en la carpeta docs/ en el que me definas de forma concisa las necesidades y propongas algunos endpoints que pueden ser necesarios.
+Limitate a resolver las necesidades descritas.
+
+## Adjustments
+
+### 1
+
+Quiero realizar algunos ajustes.
+
+Sobre la tabla matches:
+
+- El campo team_colors, quiero que sean dos campos diferentes y solo almacenen el color en formato rgb.
+- El campo sport no quiero que sea texto libre.
+- El campo duration he pensado mejor que sea duración en minutos y sea de tipo numerico.
+
+Sobre la tabla match_registrations:
+
+- Me gustaría que de alguna forma se pudiera confirmar si realmente jugó el partido o falló a última hora, así como indicar quienes quedaron como reservas.
+- Poder indicar si la actitud del jugador fue positiva o negativa.
+
+Respecto al Sistema de méritos, quiero hacer algunas modificaciones:
+
+En el grupo se crearán unas nuevas propiedades para:
+
+- indicar el número de partidos que se tendrán en cuenta a la hora de calcular los criterios.
+- puntos otorgados por partido jugados
+- puntos otorgados por partido que debía jugar pero no apareció (pueden ser positivo o negativo)
+- puntos otorgados por partido como reserva
+- puntos otorgados por jugador negativo
+- puntos otorgados por jugador positivo
+
+Criterios:
+
+- Criterio 1: Se contabilizarán los últimos X partidos disputados del grupo, y se sumaran los puntos definidos en el grupo
+- Criterio 2: En caso de empate en los puntos, se ordenará por fecha en la que se apuntó al partido premiando a quien lo hiciera antes.
+
+### 2
+
+Quiero que implementes la lógica de los ajustes descritos en el punto anterior.
+
+Quiero hacer algun ajuste más:
+
+- Añadir un campo al partido para que una vez marcado, ya no se puedan realizar cambios ni en el partido ni en las valoraciones de los participantes.
+- Creo que estaría bien un enpoint separado para poder evaluar a los participantes. Esta evaluación sólo se podrá hacer con el partido en estado finished, por los owners siempre que no esté bloqueado.
+- Además otro endpoint especifico únicamente para hacer los cambios de estado del partido, validando desde que estados pueden pasar a otro.
+- Y un endpoint para poder marcar el partido como no modificable.
+
+### 3
+
+Quiero añadir algun ajuste:
+
+- Al obtener la lista de participantes, los méritos se calcularan hasta el partido actual sin tenerlo en cuenta
+- Cuando el partido se pase a playing, se marcaran automaticamente los miembros que han quedado como reserva.
+- Si algún miembro de los que estaban entre los participantes, se intenta quitar antes de X horas (nueva propiedad en grupo), se pasará al final de la lista de los participantes y esto afectará como mérito negativo en una nueva propiedad definida en el grupo.
+
+# 52 - Update types and create tests
+
+Actualiza los tipos y crea los tests.
+
+Recuerda que estamos siguiendo metodologia TDD.
+
+Tomate el tiempo necesario para crear unos tests robutos que prueben todos los escenarios definidos en el documento de diseño 0005.
+
+Limitate a lo que te pido.
+
+## Adjustments
+
+### 1
+
+Antes de continuar revisa detenidamente los tipos, Creo que no es correcto
+
+### 2
+
+Por favor, revisa el test que has generado y asegurate muy bien de que se cubren todos los escenarios definidos en el documento de diseño 0005.
+
+No me importa que necesites más tiempo de lo normal, este punto es crítico.

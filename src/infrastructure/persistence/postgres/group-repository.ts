@@ -7,8 +7,14 @@ export class PostgresGroupRepository implements IGroupRepository {
 
     async create(group: Group): Promise<Group> {
         const query = `
-            INSERT INTO groups (id, name, description, is_active, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO groups (
+                id, name, description, is_active, created_at, updated_at,
+                merit_config_max_matches, merit_points_played, merit_points_no_show,
+                merit_points_reserve, merit_points_positive_attitude,
+                merit_points_negative_attitude, merit_config_hours_before_penalty,
+                merit_points_late_cancel
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING *
         `;
         const values = [
@@ -17,7 +23,15 @@ export class PostgresGroupRepository implements IGroupRepository {
             group.description,
             group.isActive,
             group.createdAt,
-            group.updatedAt
+            group.updatedAt,
+            group.meritConfigMaxMatches,
+            group.meritPointsPlayed,
+            group.meritPointsNoShow,
+            group.meritPointsReserve,
+            group.meritPointsPositiveAttitude,
+            group.meritPointsNegativeAttitude,
+            group.meritConfigHoursBeforePenalty,
+            group.meritPointsLateCancel
         ];
 
         const { rows } = await this.pool.query(query, values);
@@ -27,11 +41,29 @@ export class PostgresGroupRepository implements IGroupRepository {
     async update(group: Group): Promise<Group> {
         const query = `
             UPDATE groups
-            SET name = $2, description = $3, is_active = $4, updated_at = $5
+            SET name = $2, description = $3, is_active = $4, updated_at = $5,
+                merit_config_max_matches = $6, merit_points_played = $7, merit_points_no_show = $8,
+                merit_points_reserve = $9, merit_points_positive_attitude = $10,
+                merit_points_negative_attitude = $11, merit_config_hours_before_penalty = $12,
+                merit_points_late_cancel = $13
             WHERE id = $1
             RETURNING *
         `;
-        const values = [group.id, group.name, group.description, group.isActive, group.updatedAt];
+        const values = [
+            group.id,
+            group.name,
+            group.description,
+            group.isActive,
+            group.updatedAt,
+            group.meritConfigMaxMatches,
+            group.meritPointsPlayed,
+            group.meritPointsNoShow,
+            group.meritPointsReserve,
+            group.meritPointsPositiveAttitude,
+            group.meritPointsNegativeAttitude,
+            group.meritConfigHoursBeforePenalty,
+            group.meritPointsLateCancel
+        ];
 
         const { rows } = await this.pool.query(query, values);
         if (rows.length === 0) {
@@ -52,6 +84,7 @@ export class PostgresGroupRepository implements IGroupRepository {
     }
 
     async findById(id: string): Promise<Group | null> {
+        if (!id || typeof id !== "string" || id === "undefined") return null;
         const query = "SELECT * FROM groups WHERE id = $1";
         const { rows } = await this.pool.query(query, [id]);
 
@@ -70,7 +103,7 @@ export class PostgresGroupRepository implements IGroupRepository {
             WHERE gm.user_id = $1
         `;
         const { rows } = await this.pool.query(query, [userId]);
-        return rows.map(this.mapRowToGroup);
+        return rows.map((row) => this.mapRowToGroup(row));
     }
 
     async addMember(member: GroupMember): Promise<void> {
@@ -128,10 +161,11 @@ export class PostgresGroupRepository implements IGroupRepository {
     async findMembersByGroupId(groupId: string): Promise<GroupMember[]> {
         const query = "SELECT * FROM group_members WHERE group_id = $1";
         const { rows } = await this.pool.query(query, [groupId]);
-        return rows.map(this.mapRowToMember);
+        return rows.map((row) => this.mapRowToMember(row));
     }
 
     async findMember(groupId: string, userId: string): Promise<GroupMember | null> {
+        if (!groupId || groupId === "undefined" || !userId || userId === "undefined") return null;
         const query = "SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2";
         const { rows } = await this.pool.query(query, [groupId, userId]);
 
@@ -149,7 +183,15 @@ export class PostgresGroupRepository implements IGroupRepository {
             description: row.description,
             isActive: row.is_active,
             createdAt: new Date(row.created_at),
-            updatedAt: new Date(row.updated_at)
+            updatedAt: new Date(row.updated_at),
+            meritConfigMaxMatches: row.merit_config_max_matches,
+            meritPointsPlayed: row.merit_points_played,
+            meritPointsNoShow: row.merit_points_no_show,
+            meritPointsReserve: row.merit_points_reserve,
+            meritPointsPositiveAttitude: row.merit_points_positive_attitude,
+            meritPointsNegativeAttitude: row.merit_points_negative_attitude,
+            meritConfigHoursBeforePenalty: row.merit_config_hours_before_penalty,
+            meritPointsLateCancel: row.merit_points_late_cancel
         };
     }
 

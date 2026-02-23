@@ -9,6 +9,17 @@ export interface Group {
     name: string;
     description?: string;
     isActive: boolean;
+    // Merit System Config
+    meritConfigMaxMatches: number;
+    meritPointsPlayed: number;
+    meritPointsNoShow: number;
+    meritPointsReserve: number;
+    meritPointsPositiveAttitude: number;
+    meritPointsNegativeAttitude: number;
+    // Penalty Config
+    meritConfigHoursBeforePenalty: number;
+    meritPointsLateCancel: number;
+
     createdAt: Date;
     updatedAt: Date;
 }

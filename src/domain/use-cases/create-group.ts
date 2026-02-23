@@ -6,6 +6,14 @@ import type { IUserRepository } from "../../infrastructure/persistence/user-repo
 export interface CreateGroupDto {
     name: string;
     description?: string;
+    meritConfigMaxMatches?: number;
+    meritPointsPlayed?: number;
+    meritPointsNoShow?: number;
+    meritPointsReserve?: number;
+    meritPointsPositiveAttitude?: number;
+    meritPointsNegativeAttitude?: number;
+    meritConfigHoursBeforePenalty?: number;
+    meritPointsLateCancel?: number;
 }
 
 export class CreateGroupUseCase {
@@ -42,6 +50,15 @@ export class CreateGroupUseCase {
             name: input.name,
             description: input.description,
             isActive: true,
+            // Use custom config if provided, otherwise defaults
+            meritConfigMaxMatches: input.meritConfigMaxMatches ?? 10,
+            meritPointsPlayed: input.meritPointsPlayed ?? 3,
+            meritPointsNoShow: input.meritPointsNoShow ?? -5,
+            meritPointsReserve: input.meritPointsReserve ?? 1,
+            meritPointsPositiveAttitude: input.meritPointsPositiveAttitude ?? 1,
+            meritPointsNegativeAttitude: input.meritPointsNegativeAttitude ?? -1,
+            meritConfigHoursBeforePenalty: input.meritConfigHoursBeforePenalty ?? 12,
+            meritPointsLateCancel: input.meritPointsLateCancel ?? -2,
             createdAt: now,
             updatedAt: now
         };

@@ -18,7 +18,7 @@ async function runMigrations() {
         console.log("✅ Database migrations completed successfully");
     } catch (error) {
         console.error("❌ Migration failed:", error);
-        process.exit(1);
+        process.exitCode = 1;
     } finally {
         await disconnectDatabase();
     }

@@ -25,7 +25,8 @@
 		"start:prod": "node dist/server.js",
 		"start": "ts-node src/server.ts",
 		"test:coverage": "vitest --coverage",
-		"test": "vitest"
+		"test": "vitest",
+		"test:postgres": "npm run db:reset && npm run db:migrate && vitest run --fileParallelism=false --maxWorkers=1"
 	},
 	"devDependencies": {
 		"@types/bcrypt": "^6.0.0",

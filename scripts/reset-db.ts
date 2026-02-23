@@ -13,6 +13,8 @@ async function resetDatabase() {
         await connectDatabase();
 
         // Drop all tables in reverse order (due to constraints)
+        await pool.query("DROP TABLE IF EXISTS match_registrations CASCADE;");
+        await pool.query("DROP TABLE IF EXISTS matches CASCADE;");
         await pool.query("DROP TABLE IF EXISTS group_members CASCADE;");
         await pool.query("DROP TABLE IF EXISTS groups CASCADE;");
         await pool.query("DROP TABLE IF EXISTS users CASCADE;");
@@ -22,7 +24,7 @@ async function resetDatabase() {
         console.log('💡 Run "npm run db:migrate" to recreate the schema');
     } catch (error) {
         console.error("❌ Database reset failed:", error);
-        process.exit(1);
+        process.exitCode = 1;
     } finally {
         await disconnectDatabase();
     }

@@ -2,13 +2,16 @@ import type { Application } from "express";
 import request from "supertest";
 import { beforeEach, describe, it, expect } from "vitest";
 import { createApp } from "../app";
+import { clearDatabase } from "./db-utils";
 
 describe("Auth API", () => {
     let app: Application;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        await clearDatabase();
         process.env.JWT_SECRET = "test-secret";
-        app = createApp(true);
+        const useInMemory = process.env.IN_MEMORY_DATA !== "false";
+        app = createApp(useInMemory);
     });
 
     const testUser = {

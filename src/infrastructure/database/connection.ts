@@ -44,7 +44,8 @@ export const ensureDatabaseExists = async (): Promise<void> => {
 
 export const connectDatabase = async (): Promise<void> => {
     try {
-        await pool.connect();
+        const client = await pool.connect();
+        client.release();
         console.log("✅ Database connection established successfully.");
     } catch (error) {
         console.error("🧨 Unable to connect to the database:", error);
